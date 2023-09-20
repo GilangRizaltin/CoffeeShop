@@ -3,8 +3,7 @@ const productsRouter = express.Router();
 
 const {getProducts, addProducts,
   updateProducts, deleteProducts,
-  searchProducts, popularProducts,
-  pageProducts, orderProductBy} = require("../Handlers/products.handler")
+popularProducts, filterby} = require("../Handlers/products.handler")
 
 productsRouter.get("/", getProducts);
 
@@ -12,14 +11,11 @@ productsRouter.post("/", addProducts);
 
 productsRouter.patch("/:id", updateProducts);
 
-productsRouter.delete("/delete/:id", deleteProducts);
-
-productsRouter.get("/search", searchProducts);
+productsRouter.delete("/:id", deleteProducts);
 
 productsRouter.get("/popular", popularProducts);
 
-productsRouter.get("/page", pageProducts);
+productsRouter.get("/filter/:name/:minprice/:maxprice/:page", filterby);
 
-productsRouter.get("/orderby",orderProductBy);
 
 module.exports = productsRouter;

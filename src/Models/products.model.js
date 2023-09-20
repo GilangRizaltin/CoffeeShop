@@ -40,19 +40,6 @@ const del = (id) => {
   return db.query(sql,values)
 };
 
-const search = (title) => {
-    const sql = `select p.id as "No.",
-    p.product_name as "Product",
-    c.category_name as "Categories",
-    p.description as "Description",
-    p.price_default as "Price"
-    from products p
-    join categories c on p.category = c.id
-    where p.product_name ilike $1`;
-    const values = [`%${title}%`];
-    return db.query(sql,values)
-};
-
 const popular = () => {
     const sql = `SELECT
     p.product_name as "Product",
@@ -72,37 +59,37 @@ const popular = () => {
     return db.query(sql);
 };
 
-const page = (pages) => {
-    const sql = `select
-    product_name
-      from
+const filter = (params, query) => {
+  let sql = `SELECT 
+    p.id as "No.",
+    p.product_name as "Product",
+    c.category_name as "Categories",
+    p.description as "Description",
+    p.price_default as "Price",
+    p.created_at as "Release date"
+    FROM 
     products p
-      limit 3 offset ($1 * 3) - 3`;
-      const value = [pages];
-      return db.query(sql, value);
-};
-
-const sort = (type, orderby) => {
-  const sql = `select p.id as "No.",
-  p.product_name as "Product",
-  c.category_name as "Categories",
-  p.description as "Description",
-  p.price_default as "Price",
-  p.created_at as "Created at"
-  from products p
-  join categories c on p.category = c.id
-  order by $1 $2;`;
- const values = [type, orderby];
+    JOIN 
+    categories c ON p.category = c.id
+    WHERE 
+    p.product_name ILIKE $1
+    AND p.price_default > $2
+    AND p.price_default < $3`;
+  const values = [`%${params.name}%`, params.minprice, params.maxprice];
+  const sortColumn = query.sortBy || 'product_name';
+  const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
+  sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
+  sql += ` LIMIT 3 OFFSET ($4::int - 1) * 3;`;
+  values.push(params.page);
   return db.query(sql, values);
 };
+
 
 module.exports = {
     get,
     insert,
     update,
     del,
-    search,
     popular,
-    page,
-    sort
+    filter
 };

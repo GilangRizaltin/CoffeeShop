@@ -2,10 +2,8 @@ const { get,
   insert,
   update,
   del,
-  search,
   popular,
-  page,
-  sort
+  filter
 } = require("../Models/products.model");
 
 const getProducts = async (req,res,next) => {
@@ -83,26 +81,6 @@ const deleteProducts = (req,res) => {
   })
   };
 
-const searchProducts = async (req, res) => {
-  try {
-    const {query} = req;
-    const result = await search(query.title);
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        msg: "Product not found",
-        result: []
-      });
-    } res.status(200).json({
-      msg: "Success",
-      result: result.rows
-    });
-  } catch {
-    res.status(500).json({
-      msg: "Internal Server Error",
-    });
-  };
-  };
-
 const popularProducts = async (req,res) => {
   try{
     const result = await popular();
@@ -117,43 +95,32 @@ const popularProducts = async (req,res) => {
   };
   };
 
-const pageProducts = async (req,res) => {
-  try{
-    const {body} = req;
-    const result = await page(body.page);
-    res.status(200).json({
-      msg: "Success",
-      result: result.rows
-    })
-  } catch (error) {
-    res.status(500).json({
-      msg: "Internal Server Error"
-    });
-  };
-};
-
-const orderProductBy = (req,res) => {
-  const {body} = req;
-  sort(body.type, body.orderby)
-  .then ((result) => {
-    res.status(200).json({
-      msg: "Success",
-      result: result.rows
-    })
-  }) .catch ((err) => {
-    res.status(500).json({
-      msg:"Internal Server Error"
-    }); console.log(err)
-  });
-};
+  const filterby = async (req, res) => {
+    try {
+      const {params, query} = req;
+      const result = await filter(params, query);
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          msg: `Produk dengan nama ${params.name} tidak ditemukan`,
+        });
+      };
+      res.status(200).json({
+        msg: `Success`,
+        result: result.rows
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        msg: "Internal Server Error",
+      });
+    }
+    };
 
 module.exports = {
   getProducts,
   addProducts,
   updateProducts,
   deleteProducts,
-  searchProducts,
   popularProducts,
-  pageProducts,
-  orderProductBy
+  filterby
 };
