@@ -21,22 +21,6 @@ const read = () => {
     return db.query(sql);
 };
 
-const insert = (user_id,promo_id,serve_id,payment_type,statuses) => {
-    const sql = `INSERT INTO orders(user_id, promo_id, percent_discount,flat_discount, serve_id, fee, tax, payment_type, status)
-    VALUES (
-        $1,
-        $2,
-        (select percent_amount from promos where id = $2),
-        (select flat_amount from promos where id = $2),
-        $3,
-        (select fee from serve where id = $3),
-        0.1,
-        $4,
-        $5)`;
-      const values = [user_id,promo_id,serve_id,payment_type,statuses];
-      return db.query(sql,values);
-};
-
 const updateSub = () => {
     const sql = `UPDATE orders AS o
     SET subtotal = (
@@ -80,26 +64,25 @@ const page = (pages) => {
       return db.query(sql, value);
 };
 
-const insertOrder = (user_id, subtotal, promo_id, serve_id, total_transactions, payment_type, statuses) => {
-    const sql = `INSERT INTO orders(user_id, subtotal, promo_id, percent_discount, flat_discount, serve_id, fee, tax, total_transactions, payment_type, status)
+const insertOrder = (user_id,promo_id, serve_id, payment_type, statuses) => {
+    const sql = `INSERT INTO orders(user_id,promo_id, percent_discount, flat_discount, serve_id, fee, tax, payment_type, status)
     VALUES (
         $1,
         $2,
+        (SELECT percent_amount FROM promos WHERE id = $2),
+        (SELECT flat_amount FROM promos WHERE id = $2),
         $3,
-        (SELECT percent_amount FROM promos WHERE id = $3),
-        (SELECT flat_amount FROM promos WHERE id = $3),
-        $4,
-        (SELECT fee FROM serve WHERE id = $4),
+        (SELECT fee FROM serve WHERE id = $3),
         0.1,
-        $5,
-        $6,
-        $7
+        $4,
+        $5
     ) returning id;`;
-    const values = [user_id, subtotal, promo_id, serve_id, total_transactions, payment_type, statuses];
+    const values = [user_id,promo_id, serve_id, payment_type, statuses];
     return db.query(sql,values);
 };
 
 const insertProductOrder = (order_id, product_id, hot_or_not, size_id,quantity) => {
+    
     const sql = `INSERT INTO orders_products (order_id, product_id,hot_or_not, size_id, price, quantity, subtotal)
 VALUES (
     $1,
@@ -125,11 +108,9 @@ return db.query(sql,values)};
 
 module.exports = {
     read,
-    insert,
     updateSub, updateTotal,
     del,
     page,
     insertOrder,
     insertProductOrder,
-    insert
 }

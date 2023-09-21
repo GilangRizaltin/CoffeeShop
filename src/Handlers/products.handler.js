@@ -8,12 +8,14 @@ const { get,
 
 const getProducts = async (req,res,next) => {
   try {
-      const result = await get();
+    const {query} = req;
+      const result = await get(query);
       res.status(200).json({
           msg: "Success",
           result: result.rows,
       })
   } catch (error) {
+    console.log(error)
       res.status(500).json({
           msg: "Internal Server Error",
       })

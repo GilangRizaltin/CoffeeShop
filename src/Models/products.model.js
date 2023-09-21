@@ -1,14 +1,27 @@
 const db = require("../Configs/postgre");
 
-const get = () => {
-    const sql = `select p.id as "No.",
+const get = (query) => {
+    let sql = `select p.id as "No.",
       p.product_name as "Product",
       c.category_name as "Categories",
       p.description as "Description",
       p.price_default as "Price"
       from products p
-      join categories c on p.category = c.id`
-      return db.query(sql);
+      join categories c on p.category = c.id`;
+      const values = [parseInt(query.page)];
+       if(query.search || query.maxprice || query.minprice) {
+         sql += ` where`
+         if(query.search) {
+           sql += ` p.product_name ilike $${values.length + 1}`
+           values.push(`%${query.search}%`)
+         };
+         if(query.maxprice && query.minprice) {
+           sql += ` and p.price_default < $${values.length + 1} and p.price_default > $${values.length + 2}`
+           values.push(query.maxprice, query.minprice)
+         };
+       };
+       sql += ` limit 3 offset ($1 * 3) - 3`
+      return db.query(sql, values);
 };
 
 const insert = (product_name,category,description,price_default) => {

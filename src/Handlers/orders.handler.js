@@ -1,4 +1,4 @@
-const {read, insert, updateSub, updateTotal, del, page, insertOrder, insertProductOrder} = require("../Models/orders.model")
+const {read, updateSub, updateTotal, del, page, insertOrder, insertProductOrder} = require("../Models/orders.model")
 
 const db = require("../Configs/postgre");
 
@@ -15,25 +15,6 @@ const getAllOrders = (req,res) => {
       });
     });
   };
-
-const createOrder = async(req,res) => {
-  try {
-    const {body, params} = req;
-      const result = await insert(
-        params.user_id,
-        body.promo_id,
-        body.serve_id,
-        body.payment_type,
-        body.status);
-      res.status(200).json({
-        msg: "Order Berhasil Dimasukkan"
-    })
-  } catch (err) {
-    res.status(500).json({
-      msg: "Internal Server Error"
-    }); console.log(err)
-  };
-};
 
 const softDeleteOrder = (req,res) => {
     const {body} = req;
@@ -73,18 +54,18 @@ const transactions = async (req,res) => {
   try {
     await client.query("begin");
     const {body, params} = req;
-    const result = await insertOrder(params.user_id, body.subtotal, body.promo_id, body.serve_id, body.total_transactions, body.payment_type, body.statuses);
-    await insertProductOrder(result.rows[0].id, body.product_id, body.hot_or_not, body.size_id, body.quantity);
+    const result = await insertOrder(params.user_id, body.promo_id, body.serve_id, body.payment_type, body.statuses);
+    await insertProductOrder(result.rows[0].id, body.product_i, body.hot_or_not, body.size_id, body.quantity);
     await client.query("commit");
     res.status(201).json({
       msg: "Data order berhasil ditambah",
-      result: result.rows
+      result: result.rows,
     })
   } catch (error) {
     await client.query("rollback");
     res.status(500).json({
       msg:"Internal Server Error"
-    }); console.log(error)
+    }); console.log(error);
   };
 };
 
@@ -115,4 +96,17 @@ const total_transaction = async (req,res) => {
   };
 };
 
-module.exports = {getAllOrders, softDeleteOrder, pageOrders, transactions, subtotal, total_transaction, createOrder};
+// const createOrderAndOrderDetail = async (req,res) => {
+// const client = await db.connect();
+// try {
+//   await client.query('BEGIN')
+//   await client.query('COMMIT')
+// } catch (error) {
+//   await client.query('ROLLBACK')
+//   throw e
+// } finally {
+//   client.release()
+// }
+// }
+
+module.exports = {getAllOrders, softDeleteOrder, pageOrders, transactions, subtotal, total_transaction};
