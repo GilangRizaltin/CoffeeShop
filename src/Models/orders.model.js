@@ -64,7 +64,7 @@ const page = (pages) => {
       return db.query(sql, value);
 };
 
-const insertOrder = (user_id,promo_id, serve_id, payment_type, statuses) => {
+const insertOrder = (params, body) => {
     const sql = `INSERT INTO orders(user_id,promo_id, percent_discount, flat_discount, serve_id, fee, tax, payment_type, status)
     VALUES (
         $1,
@@ -77,13 +77,13 @@ const insertOrder = (user_id,promo_id, serve_id, payment_type, statuses) => {
         $4,
         $5
     ) returning id;`;
-    const values = [user_id,promo_id, serve_id, payment_type, statuses];
+    const values = [params.user_id, body.promo_id, body.serve_id, body.payment_type, body.statuses];
     return db.query(sql,values);
 };
 
-const insertProductOrder = (order_id, product_id, hot_or_not, size_id,quantity) => {
+const insertProductOrder = (order_id, body) => {
     
-    const sql = `INSERT INTO orders_products (order_id, product_id,hot_or_not, size_id, price, quantity, subtotal)
+    let sql = `INSERT INTO orders_products (order_id, product_id,hot_or_not, size_id, price, quantity, subtotal)
 VALUES (
     $1,
     $2,
@@ -101,7 +101,7 @@ VALUES (
         ) * $5
     )
 )`;
-const values = [order_id, product_id, hot_or_not, size_id,quantity];
+const values = [order_id, body.product_id, body.hot_or_not, body.size_id, body.quantity];
 return db.query(sql,values)};
 
 

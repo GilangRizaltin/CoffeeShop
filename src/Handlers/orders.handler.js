@@ -54,8 +54,8 @@ const transactions = async (req,res) => {
   try {
     await client.query("begin");
     const {body, params} = req;
-    const result = await insertOrder(params.user_id, body.promo_id, body.serve_id, body.payment_type, body.statuses);
-    await insertProductOrder(result.rows[0].id, body.product_i, body.hot_or_not, body.size_id, body.quantity);
+    const result = await insertOrder(params,body);
+    await insertProductOrder(result.rows[0].id, body);
     await client.query("commit");
     res.status(201).json({
       msg: "Data order berhasil ditambah",

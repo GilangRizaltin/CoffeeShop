@@ -1,13 +1,28 @@
-const {read,insert,update,del, page} = require("../Models/promos.model")
+const {read,insert,update,del, totalData} = require("../Models/promos.model")
 
 const getAllPromos = async (req,res,) => {
   try {
-      const result = await read();
+    const {query} = req;
+      const result = await read(query);
+      const muchData = await totalData(query)
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          msg: "Data not found"
+        });
+      };
+      const meta = {
+      page: query.page,
+      totalProduct: muchData.rows[0].total_promo,
+      next: "",
+      prev: ""
+      }
       res.status(200).json({
           msg: "Success",
           result: result.rows,
+          meta
       })
   } catch (error) {
+    console.log(error)
       res.status(500).json({
           msg: "Internal Server Error",
       })
@@ -73,24 +88,9 @@ const deletePromo = (req,res) => {
   });
 };
 
-const pagePromos = async (req,res) => {
-  try{
-    const {body} = req;
-    const result = await page(body.page);
-    res.status(200).json({
-      msg: "Success",
-      result: result.rows
-    })
-  } catch (error) {
-    res.status(500).json({
-      msg: "Internal Server Error"
-    }); console.log(error)
-  };
-};
   module.exports = {
     getAllPromos,
     createNewPromo,
     EditPromo,
     deletePromo,
-    pagePromos
 };

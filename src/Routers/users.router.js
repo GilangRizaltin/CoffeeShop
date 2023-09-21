@@ -2,13 +2,13 @@ const express = require("express");
 const usersRouter = express.Router();
 
 const {getUsers,
-  addNewUser,
+  register,
   updateUser,
   deleteUser} = require('../Handlers/users.handler')
 
-usersRouter.get("/:page", getUsers);
+usersRouter.get("/", getUsers);
 
-usersRouter.post("/create", addNewUser);
+usersRouter.post("/create", register);
 
 usersRouter.patch("/update/:id", updateUser);
 
