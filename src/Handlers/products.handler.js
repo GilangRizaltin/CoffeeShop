@@ -3,24 +3,38 @@ const { get,
   update,
   del,
   popular,
-  filter
+  totalData
 } = require("../Models/products.model");
 
-const getProducts = async (req,res,next) => {
+const getProducts = async (req, res, next) => {
   try {
-    const {query} = req;
-      const result = await get(query);
-      res.status(200).json({
-          msg: "Success",
-          result: result.rows,
-      })
+    const { query } = req;
+    const result = await get(query);
+    const muchData = await totalData(query);
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        msg: "Data not found"
+      });
+    };
+    const meta = {
+      page: query.page,
+      totalProduct: muchData.rows[0].Total_product,
+      next: "",
+      prev: ""
+    }
+    res.status(200).json({
+      msg: "Success",
+      result: result.rows,
+      meta
+    });
   } catch (error) {
-    console.log(error)
-      res.status(500).json({
-          msg: "Internal Server Error",
-      })
+    console.log(error);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
   }
 };
+
 
 const addProducts = (req, res) => {
   const {body} = req;
@@ -97,32 +111,11 @@ const popularProducts = async (req,res) => {
   };
   };
 
-  const filterby = async (req, res) => {
-    try {
-      const {params, query} = req;
-      const result = await filter(params, query);
-      if (result.rowCount === 0) {
-        return res.status(404).json({
-          msg: `Produk dengan nama ${params.name} tidak ditemukan`,
-        });
-      };
-      res.status(200).json({
-        msg: `Success`,
-        result: result.rows
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({
-        msg: "Internal Server Error",
-      });
-    }
-    };
 
 module.exports = {
   getProducts,
   addProducts,
   updateProducts,
   deleteProducts,
-  popularProducts,
-  filterby
+  popularProducts
 };

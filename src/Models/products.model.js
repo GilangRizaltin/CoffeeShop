@@ -1,28 +1,68 @@
 const db = require("../Configs/postgre");
 
 const get = (query) => {
-    let sql = `select p.id as "No.",
-      p.product_name as "Product",
-      c.category_name as "Categories",
-      p.description as "Description",
-      p.price_default as "Price"
-      from products p
-      join categories c on p.category = c.id`;
-      const values = [parseInt(query.page)];
-       if(query.search || query.maxprice || query.minprice) {
-         sql += ` where`
-         if(query.search) {
-           sql += ` p.product_name ilike $${values.length + 1}`
-           values.push(`%${query.search}%`)
-         };
-         if(query.maxprice && query.minprice) {
-           sql += ` and p.price_default < $${values.length + 1} and p.price_default > $${values.length + 2}`
-           values.push(query.maxprice, query.minprice)
-         };
-       };
-       sql += ` limit 3 offset ($1 * 3) - 3`
-      return db.query(sql, values);
+  let sql = `SELECT p.id AS "No.",
+    p.product_name AS "Product",
+    c.category_name AS "Categories",
+    p.description AS "Description",
+    p.price_default AS "Price"
+    FROM products p
+    JOIN categories c ON p.category = c.id`;
+  const values = [parseInt(query.page) || 1];
+  const conditions = [];
+  if (query.search) {
+    conditions.push(`p.product_name ILIKE $${values.length + 1}`);
+    values.push(`%${query.search}%`);
+  }
+  if (query.maxprice) {
+    conditions.push(`p.price_default <= $${values.length + 1}`);
+    values.push(parseInt(query.maxprice));
+  }
+  if (query.minprice) {
+    conditions.push(`p.price_default >= $${values.length + 1}`);
+    values.push(parseInt(query.minprice));
+  }
+  if (query.category) {
+    conditions.push(`p.category = $${values.length + 1}`);
+    values.push(parseInt(query.category));
+  }
+  if (conditions.length > 0) {
+    sql += ` WHERE ${conditions.join(" AND ")}`;
+  }
+  const sortColumn = query.sortBy || 'p.product_name';
+  const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
+  sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
+  sql += ` LIMIT 3 OFFSET ($1 * 3) - 3`;
+  return db.query(sql, values);
 };
+
+
+const totalData = (query) => {
+  let sql = `SELECT COUNT(*) AS "Total_product" FROM products p`;
+  const values = [];
+  const conditions = [];
+  if (query.search) {
+    conditions.push(`p.product_name ILIKE $${values.length + 1}`);
+    values.push(`%${query.search}%`);
+  }
+  if (query.maxprice) {
+    conditions.push(`p.price_default <= $${values.length + 1}`);
+    values.push(parseInt(query.maxprice));
+  }
+  if (query.minprice) {
+    conditions.push(`p.price_default >= $${values.length + 1}`);
+    values.push(parseInt(query.minprice));
+  }
+  if (query.category) {
+    conditions.push(`p.category = $${values.length + 1}`);
+    values.push(parseInt(query.category));
+  }
+  if (conditions.length > 0) {
+    sql += ` WHERE ${conditions.join(" AND ")}`;
+  }
+  return db.query(sql, values);
+};
+
 
 const insert = (product_name,category,description,price_default) => {
     const sql =
@@ -72,31 +112,6 @@ const popular = () => {
     return db.query(sql);
 };
 
-const filter = (params, query) => {
-  let sql = `SELECT 
-    p.id as "No.",
-    p.product_name as "Product",
-    c.category_name as "Categories",
-    p.description as "Description",
-    p.price_default as "Price",
-    p.created_at as "Release date"
-    FROM 
-    products p
-    JOIN 
-    categories c ON p.category = c.id
-    WHERE 
-    p.product_name ILIKE $1
-    AND p.price_default > $2
-    AND p.price_default < $3`;
-  const values = [`%${params.name}%`, params.minprice, params.maxprice];
-  const sortColumn = query.sortBy || 'product_name';
-  const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
-  sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
-  sql += ` LIMIT 3 OFFSET ($4::int - 1) * 3;`;
-  values.push(params.page);
-  return db.query(sql, values);
-};
-
 
 module.exports = {
     get,
@@ -104,5 +119,5 @@ module.exports = {
     update,
     del,
     popular,
-    filter
+    totalData
 };
