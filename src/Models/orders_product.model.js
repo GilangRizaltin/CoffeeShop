@@ -1,35 +1,29 @@
 const db = require("../Configs/postgre");
 
-const readOrdersProducts = () => {
-    const sql = `select op.id as "No.",
-      o.id as "Order ID",
-      p.product_name as "Product",
-      s.size_name as "Size",
-      op.price as "Price per product",
-      op.quantity as "Quantity",
-      op.subtotal as "Subtotal"
-      from orders_products op
-      join 
-      orders o on op.order_id = o.id
-      join 
-      products p on op.product_id = p.id
-      join
-      sizes s on op.size_id = s.id`;
-      return db.query(sql)
-};
-
-const insert = (order_id,product_id,size_id,quantity,hor_or_not) => {
-    const sql = `insert into orders_products (order_id, product_id, size_id,  hot_or_not, price, quantity, subtotal)
-  values ($1,$2,$3, $5, (select price_default from products where id = $2) + (select additional_fee from sizes where id = $3), 
-  $4,((select price_default from products where id = $2) + (select additional_fee from sizes where id = $3))* $4)`;
-  const values = [
-    order_id,
-    product_id,
-    size_id,
-    quantity,
-    hor_or_not
-  ];
-  return db.query(sql,values)
+const readOrdersProducts = (query) => {
+    const sql = `select
+    op.id as "No.",
+    o.id as "Order ID",
+    u.full_name as "User Name",
+    p.product_name as "Product",
+    s.size_name as "Size",
+    op.price as "Price per product",
+    op.quantity as "Quantity",
+    op.subtotal as "Subtotal"
+    from
+    orders_products op
+    inner join
+    orders o ON op.order_id = o.id
+    inner join
+    users u ON o.user_id = u.id
+    join
+    products p ON op.product_id = p.id
+    join
+    sizes s ON op.size_id = s.id
+    where
+    o.id = $1`;
+    const values = [query.order_id]
+      return db.query(sql, values)
 };
 
 const update = (quantity, id) => {
@@ -44,4 +38,4 @@ const deleteOrdersProducts = (id) => {
     return db.query(sql,value)
 };
 
-module.exports = {readOrdersProducts, deleteOrdersProducts, insert, update}
+module.exports = {readOrdersProducts, deleteOrdersProducts, update}

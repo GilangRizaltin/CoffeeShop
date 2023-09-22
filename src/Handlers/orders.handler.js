@@ -1,4 +1,4 @@
-const {read, updateSub, updateTotal, del, page, insertOrder, insertProductOrder} = require("../Models/orders.model")
+const {read, del,insertOrder, insertProductOrder, updateStatus} = require("../Models/orders.model")
 
 const db = require("../Configs/postgre");
 
@@ -34,36 +34,15 @@ const softDeleteOrder = (req,res) => {
     });
   };
 
-const pageOrders = async (req,res) => {
-    try{
-      const {body} = req;
-      const result = await page(body.page);
-      res.status(200).json({
-        msg: "Success",
-        result: result.rows
-      })
-    } catch (error) {
-      res.status(500).json({
-        msg: "Internal Server Error"
-      }); console.log(error);
-    };
-  };
-
   const transactions = async (req, res) => {
     const client = await db.connect();
     try {
       await client.query("begin");
       const { body, params } = req;
-  
-      // Insert the order
       const orderResult = await insertOrder(params, body);
-  
-      // Insert multiple order products
       const productInsertPromises = body.products.map((product) => {
         return insertProductOrder(orderResult.rows[0].id, product);
       });
-  
-      // Execute all product insertions in parallel
       await Promise.all(productInsertPromises);
   
       await client.query("commit");
@@ -83,44 +62,19 @@ const pageOrders = async (req,res) => {
     }
   };
 
-const subtotal = async (req,res) => {
+const updateStat = async (req, res) => {
   try {
-    const result = await updateSub()
+    const {body} = req;
+    const result = await updateStatus(body);
     res.status(201).json({
-      msg: "Subtotal berhasil diupdate",
-      result: result.rows
+      msg: `Status order untuk ID ${body.order_id} berhasil diubah menjadi ${body.statuses}`
     });
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       msg: "Internal Server Error"
-    });
-  };
-}
-
-const total_transaction = async (req,res) => {
-  try {
-    await updateTotal()
-    res.status(201).json({
-      msg: "Total Transaksi berhasil diupdate"
-    });
-  } catch (error) {
-    res.status(500).json({
-      msg: "Internal Server Error"
-    }); console.log(error)
-  };
+    })
+  }
 };
 
-// const createOrderAndOrderDetail = async (req,res) => {
-// const client = await db.connect();
-// try {
-//   await client.query('BEGIN')
-//   await client.query('COMMIT')
-// } catch (error) {
-//   await client.query('ROLLBACK')
-//   throw e
-// } finally {
-//   client.release()
-// }
-// }
-
-module.exports = {getAllOrders, softDeleteOrder, pageOrders, transactions, subtotal, total_transaction};
+module.exports = {getAllOrders, softDeleteOrder, transactions, updateStat};

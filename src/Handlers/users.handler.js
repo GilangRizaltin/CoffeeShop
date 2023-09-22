@@ -139,10 +139,11 @@ const userlogin = async (req, res) => {
       });
     };
     const payload = {
-      user_name, user_type
+      user_name, user_type, 
     };
     jwt.sign(payload, jwtKey,{
-      expiresIn: '10m'
+      expiresIn: '10m',
+      issuer: issuerWho,
     }, (error, token) => {
       if (error) throw error;
       res.status(200).json({

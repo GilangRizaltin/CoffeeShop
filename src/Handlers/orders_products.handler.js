@@ -1,40 +1,19 @@
-const {readOrdersProducts, deleteOrdersProducts, update, insert} = require("../Models/orders_product.model")
+const {readOrdersProducts, deleteOrdersProducts, update} = require("../Models/orders_product.model")
 
 const getAllOrdersProducts = async (req, res) => {
     try{
-      const result = await readOrdersProducts();
+      const {query} = req;
+      const result = await readOrdersProducts(query);
       res.status(200).json({
         msg: "Success",
         result: result.rows
       });
     } catch (err) {
+      console.log(err)
       res.status(500).json({
         msg: "Internal Server Error"
       });
     };
-};
-
-const insertOrderProduct = (req,res) => {
-  const {body} = req;
-  insert(body.order_id,
-    body.product_id,
-    body.size_id,
-    body.quantity,
-    body.hor_or_not)
-  .then ((result) => {
-    res.status(201).json({
-      msg: "Order Product berhasil dibuat",
-      result: result.rows
-    })
-  }) .catch ((error) => {
-    if (error.code === "23503" && error.constraint === "orders_products_order_id_fkey") {
-      return res.status(400).json({
-        msg: `Order id ${body.order_id} tidak ditemukan`
-      });
-    } res.status(500).json({
-      msg:"Internal Server Error"
-    }); console.log(error);
-  });
 };
 
 const updateQuantity = async (req, res) => {
@@ -78,6 +57,5 @@ const deleteOrderProduct = (req,res) => {
 module.exports = {
     getAllOrdersProducts,
     deleteOrderProduct,
-    insertOrderProduct,
     updateQuantity
 };

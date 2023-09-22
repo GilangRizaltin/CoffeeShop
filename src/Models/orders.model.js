@@ -65,22 +65,26 @@ const page = (pages) => {
 };
 
 const insertOrder = (params, body) => {
-    const sql = `INSERT INTO orders(user_id,promo_id, percent_discount, flat_discount, serve_id, fee, tax, payment_type, status)
+    const sql = `INSERT INTO orders(user_id, subtotal, promo_id, percent_discount, flat_discount, serve_id, fee, tax, total_transactions, payment_type, status)
       VALUES (
           $1,
           $2,
-          (SELECT percent_amount FROM promos WHERE id = $2),
-          (SELECT flat_amount FROM promos WHERE id = $2),
           $3,
-          (SELECT fee FROM serve WHERE id = $3),
-          0.1,
+          (SELECT percent_amount FROM promos WHERE id = $3),
+          (SELECT flat_amount FROM promos WHERE id = $3),
           $4,
-          $5
+          (SELECT fee FROM serve WHERE id = $4),
+          0.1,
+          $5,
+          $6,
+          $7
       ) returning id;`;
     const values = [
       params.user_id,
+      body.subtotal,
       body.promo_id,
       body.serve_id,
+      body.total_transactions,
       body.payment_type,
       body.statuses,
     ];
@@ -116,7 +120,11 @@ const insertOrder = (params, body) => {
     return db.query(sql, values);
   };
 
-
+const updateStatus = (body) => {
+  const sql = "update orders set status = $1, updated_at = now() where id = $2;"
+  const values = [body.statuses, body.order_id]
+  return db.query(sql, values)
+};
 
 module.exports = {
     read,
@@ -125,4 +133,5 @@ module.exports = {
     page,
     insertOrder,
     insertProductOrder,
+    updateStatus
 }

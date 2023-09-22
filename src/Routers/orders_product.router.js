@@ -3,14 +3,12 @@ const ordersProductRouter = express.Router();
 
 const {getAllOrdersProducts,
   deleteOrderProduct,
-  insertOrderProduct, updateQuantity} = require("../Handlers/orders_products.handler")
+  updateQuantity} = require("../Handlers/orders_products.handler")
 
 ordersProductRouter.get("/", getAllOrdersProducts);
 
-ordersProductRouter.post("/create", insertOrderProduct);
+ordersProductRouter.patch("/", updateQuantity);
 
-ordersProductRouter.patch("/update", updateQuantity);
-
-ordersProductRouter.delete("/delete/:id", deleteOrderProduct);
+ordersProductRouter.delete("/:id", deleteOrderProduct);
 
 module.exports = ordersProductRouter;
