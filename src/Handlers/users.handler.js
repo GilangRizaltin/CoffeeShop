@@ -1,5 +1,7 @@
-const {insert, read, update, del, totalData} = require("../Models/users.model")
+const {insert, read, update, del, totalData, login} = require("../Models/users.model")
 const argon = require("argon2");
+const jwt = require("jsonwebtoken");
+const {jwtKey, issuerWho} = require("../Configs/environtment")
 
 const getUsers = async (req,res,next) => {
   try {
@@ -76,7 +78,6 @@ const updateUser = async (req, res) => {
     }
     res.status(201).json({
       msg: `Successfully update data for ${result.rows[0].full_name}`,
-      result: result.rows,
     });
   } catch (err) {
     if (err.code === "23505" ) {
@@ -122,10 +123,47 @@ const deleteUser = (req,res) => {
   });
 };
 
+const userlogin = async (req, res) => {
+  try {
+    const {body} = req;
+    const result = await login(body);
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        msg: "Invalid data"
+      });
+    };
+    const {password_user, user_name, user_type} = result.rows[0];
+    if (!await argon.verify(password_user, body.password)) {
+      return res.status(401).json({
+        msg: "Invalid E-mail or Password"
+      });
+    };
+    const payload = {
+      user_name, user_type
+    };
+    jwt.sign(payload, jwtKey,{
+      expiresIn: '10m'
+    }, (error, token) => {
+      if (error) throw error;
+      res.status(200).json({
+        msg: "Successfully Login",
+        data: {
+          token
+        }
+      });
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: "Internal Server Error"
+    });
+  };
+}
 
   module.exports = {
     getUsers,
     register,
     updateUser,
-    deleteUser
+    deleteUser,
+    userlogin
 };

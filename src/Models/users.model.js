@@ -35,7 +35,7 @@ const read = (query) => {
   if (conditions.length > 0) {
     sql += ` WHERE ${conditions.join(" AND ")}`;
   }
-  const sortColumn = query.sortBy || 'u.user_name';
+  const sortColumn = query.sortBy || 'u.id';
   const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
   sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
   sql += ` LIMIT 3 OFFSET ($1 * 3) - 3`;
@@ -103,12 +103,9 @@ const update = (params, body, hashedPwd) => {
     sql += `password_user = $${i + 1}, `;
     values.push(hashedPwd);
   }
-  sql += `update_at = now() WHERE id = $1 RETURNING *`;
+  sql += `update_at = now() WHERE id = $1 returning full_name`;
   return db.query(sql, values);
 };
-
-// const updatePassword = {} => {
-// }
 
 const del = (params) => {
     const sql = "delete from users where id = $1 returning full_name"
@@ -116,10 +113,17 @@ const del = (params) => {
   return db.query(sql, value);
 };
 
+const login = (body) => {
+  const sql = `select password_user, user_name, user_type from users where email = $1`;
+  const values = [body.email]
+  return db.query(sql, values)
+}
+
 module.exports = {
     insert,
     read,
     update,
     del,
-    totalData
+    totalData,
+    login
 };

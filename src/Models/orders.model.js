@@ -66,43 +66,55 @@ const page = (pages) => {
 
 const insertOrder = (params, body) => {
     const sql = `INSERT INTO orders(user_id,promo_id, percent_discount, flat_discount, serve_id, fee, tax, payment_type, status)
-    VALUES (
-        $1,
-        $2,
-        (SELECT percent_amount FROM promos WHERE id = $2),
-        (SELECT flat_amount FROM promos WHERE id = $2),
-        $3,
-        (SELECT fee FROM serve WHERE id = $3),
-        0.1,
-        $4,
-        $5
-    ) returning id;`;
-    const values = [params.user_id, body.promo_id, body.serve_id, body.payment_type, body.statuses];
-    return db.query(sql,values);
-};
-
-const insertProductOrder = (order_id, body) => {
-    
-    let sql = `INSERT INTO orders_products (order_id, product_id,hot_or_not, size_id, price, quantity, subtotal)
-VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    (
-        (SELECT price_default FROM products WHERE id = $2) + 
-        (SELECT additional_fee FROM sizes WHERE id = $4)
-    ),
-    $5,
-    (
-        (
-            (SELECT price_default FROM products WHERE id = $2) + 
-            (SELECT additional_fee FROM sizes WHERE id = $4)
-        ) * $5
-    )
-)`;
-const values = [order_id, body.product_id, body.hot_or_not, body.size_id, body.quantity];
-return db.query(sql,values)};
+      VALUES (
+          $1,
+          $2,
+          (SELECT percent_amount FROM promos WHERE id = $2),
+          (SELECT flat_amount FROM promos WHERE id = $2),
+          $3,
+          (SELECT fee FROM serve WHERE id = $3),
+          0.1,
+          $4,
+          $5
+      ) returning id;`;
+    const values = [
+      params.user_id,
+      body.promo_id,
+      body.serve_id,
+      body.payment_type,
+      body.statuses,
+    ];
+    return db.query(sql, values);
+  };
+  
+  const insertProductOrder = (order_id, body) => {
+    const sql = `INSERT INTO orders_products (order_id, product_id,hot_or_not, size_id, price, quantity, subtotal)
+      VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          (
+              (SELECT price_default FROM products WHERE id = $2) + 
+              (SELECT additional_fee FROM sizes WHERE id = $4)
+          ),
+          $5,
+          (
+              (
+                  (SELECT price_default FROM products WHERE id = $2) + 
+                  (SELECT additional_fee FROM sizes WHERE id = $4)
+              ) * $5
+          )
+      )`;
+    const values = [
+      order_id,
+      body.product_id,
+      body.hot_or_not,
+      body.size_id,
+      body.quantity,
+    ];
+    return db.query(sql, values);
+  };
 
 
 

@@ -4,15 +4,18 @@ const usersRouter = express.Router();
 const {getUsers,
   register,
   updateUser,
-  deleteUser} = require('../Handlers/users.handler')
+  deleteUser,
+  userlogin} = require('../Handlers/users.handler')
 
 usersRouter.get("/", getUsers);
 
-usersRouter.post("/create", register);
+usersRouter.post("/", register);
 
-usersRouter.patch("/update/:id", updateUser);
+usersRouter.patch("/:id", updateUser);
 
-usersRouter.delete("/delete/:id", deleteUser);
+usersRouter.delete("/:id", deleteUser);
+
+usersRouter.post("/login", userlogin);
 
 
 module.exports = usersRouter;

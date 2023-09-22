@@ -49,25 +49,39 @@ const pageOrders = async (req,res) => {
     };
   };
 
-const transactions = async (req,res) => {
-  const client = await db.connect();
-  try {
-    await client.query("begin");
-    const {body, params} = req;
-    const result = await insertOrder(params,body);
-    await insertProductOrder(result.rows[0].id, body);
-    await client.query("commit");
-    res.status(201).json({
-      msg: "Data order berhasil ditambah",
-      result: result.rows,
-    })
-  } catch (error) {
-    await client.query("rollback");
-    res.status(500).json({
-      msg:"Internal Server Error"
-    }); console.log(error);
+  const transactions = async (req, res) => {
+    const client = await db.connect();
+    try {
+      await client.query("begin");
+      const { body, params } = req;
+  
+      // Insert the order
+      const orderResult = await insertOrder(params, body);
+  
+      // Insert multiple order products
+      const productInsertPromises = body.products.map((product) => {
+        return insertProductOrder(orderResult.rows[0].id, product);
+      });
+  
+      // Execute all product insertions in parallel
+      await Promise.all(productInsertPromises);
+  
+      await client.query("commit");
+  
+      res.status(201).json({
+        msg: "Data order berhasil ditambah",
+        result: orderResult.rows,
+      });
+    } catch (error) {
+      await client.query("rollback");
+      res.status(500).json({
+        msg: "Internal Server Error",
+      });
+      console.error(error);
+    } finally {
+      client.release();
+    }
   };
-};
 
 const subtotal = async (req,res) => {
   try {
