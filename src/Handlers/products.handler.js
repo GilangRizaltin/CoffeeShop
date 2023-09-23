@@ -16,12 +16,14 @@ const getProducts = async (req, res, next) => {
         msg: "Data not found"
       });
     };
-    const meta = {
-      page: query.page,
-      totalProduct: muchData.rows[0].Total_product,
-      next: "",
-      prev: ""
-    }
+    const totalProduct = parseInt(muchData.rows[0].total_product);
+      const lastPage = Math.ceil(totalProduct / 4) <= parseInt(query.page);
+      const meta = {
+      page: parseInt(query.page) || 1,
+      totalProduct: totalProduct,
+      next: lastPage ? null : "",
+      prev: parseInt(query.page) === 1 ? null : ""
+      };
     res.status(200).json({
       msg: "Success",
       result: result.rows,

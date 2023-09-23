@@ -1,5 +1,6 @@
 const express = require("express");
 const promosRouter = express.Router();
+const {isLogin, isAdmin, isNormalUser} = require("../Middlewares/authorization")
 
 const {getAllPromos,
   createNewPromo,

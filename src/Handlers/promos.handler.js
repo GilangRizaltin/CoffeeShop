@@ -10,11 +10,13 @@ const getAllPromos = async (req,res,) => {
           msg: "Data not found"
         });
       };
+      const totalPromos = parseInt(muchData.rows[0].total_promo);
+      const lastPage = Math.ceil(totalPromos / 4) <= parseInt(query.page);
       const meta = {
-      page: query.page,
-      totalProduct: muchData.rows[0].total_promo,
-      next: "",
-      prev: ""
+      page: parseInt(query.page) || 1,
+      totalProduct: totalPromos,
+      next: lastPage ? null : "",
+      prev: parseInt(query.page) === 1 ? null : ""
       }
       res.status(200).json({
           msg: "Success",

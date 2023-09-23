@@ -13,12 +13,14 @@ const getUsers = async (req,res,next) => {
           msg: "Data not found"
         });
       };
+      const totalUser = parseInt(muchData.rows[0].total_user);
+      const lastPage = Math.ceil(totalUser / 4) <= parseInt(query.page);
       const meta = {
-        page: query.page,
-        totalUser: muchData.rows[0].total_user,
-        next: "",
-        prev: ""
-      }
+      page: parseInt(query.page) || 1,
+      totalUser: totalUser,
+      next: lastPage ? null : "",
+      prev: parseInt(query.page) === 1 ? null : ""
+      };
       res.status(200).json({
           msg: "Success",
           result: result.rows,

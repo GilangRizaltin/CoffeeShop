@@ -1,7 +1,7 @@
 const db = require("../Configs/postgre");
 
-const read = () => {
-    const sql = `select o.id as "No.",
+const read = (query) => {
+    let sql = `select o.id as "No.",
     u.full_name  as "User",
     o.subtotal as "Subtotal",
     p.promo_code as "Promo Code",
@@ -18,7 +18,17 @@ const read = () => {
     join promos p on o.promo_id = p.id
     join serve s on o.serve_id = s.id 
     join payment_type py on o.payment_type = py.id`;
-    return db.query(sql);
+    const values = [parseInt(query.page) || 1];
+    const sortColumn = query.sortBy || 'o.id';
+    const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
+    sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
+    sql += ` LIMIT 4 OFFSET ($1 * 4) - 4`;
+    return db.query(sql, values);
+};
+
+const totalData = () => {
+  let sql = `SELECT COUNT(*) AS "Total_Orders" FROM orders o`;
+  return db.query(sql);
 };
 
 const updateSub = () => {
@@ -133,5 +143,6 @@ module.exports = {
     page,
     insertOrder,
     insertProductOrder,
-    updateStatus
+    updateStatus,
+    totalData
 }

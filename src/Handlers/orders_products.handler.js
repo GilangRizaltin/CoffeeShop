@@ -1,11 +1,13 @@
-const {readOrdersProducts, deleteOrdersProducts, update} = require("../Models/orders_product.model")
+const {readOrdersProducts, deleteOrdersProducts, update, userID} = require("../Models/orders_product.model")
 
 const getAllOrdersProducts = async (req, res) => {
     try{
       const {query} = req;
       const result = await readOrdersProducts(query);
+      const data = await userID(query)
       res.status(200).json({
         msg: "Success",
+        data: data.rows,
         result: result.rows
       });
     } catch (err) {
