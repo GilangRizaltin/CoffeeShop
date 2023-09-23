@@ -13,7 +13,7 @@ const isLogin = (req, res, next) => {
         if(error)
         switch (error.name) {
             case "TokenExpiredError" :
-                returnres.status(401).json({
+                return res.status(401).json({
                     msg: "Access ended, please re-log in"
                 });
             case "NotBeforeError" :

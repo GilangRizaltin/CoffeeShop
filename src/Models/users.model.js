@@ -87,13 +87,13 @@ const insert = (body, hashedPassword) => {
   return db.query(sql, values)  
 };
 
-const update = (params, body, hashedPwd) => {
+const update = (user_name, body, hashedPwd) => {
   let sql = `UPDATE users SET `;
-  const values = [params.id];
+  const values = [user_name];
   let i = 1;
-
+  if (!body.last_password)
   for (const [key, value] of Object.entries(body)) {
-    if (key !== "password_user") {
+    if (key !== "password_user" && "user_name") {
       sql += `${key} = $${i + 1}, `;
       values.push(value);
       i++;
@@ -103,7 +103,7 @@ const update = (params, body, hashedPwd) => {
     sql += `password_user = $${i + 1}, `;
     values.push(hashedPwd);
   }
-  sql += `update_at = now() WHERE id = $1 returning full_name`;
+  sql += `update_at = now() WHERE user_name = $1 returning full_name`;
   return db.query(sql, values);
 };
 
@@ -119,11 +119,25 @@ const login = (body) => {
   return db.query(sql, values)
 }
 
+const pwd = (username) => {
+  const sql = `select password_user from users where user_name = $1`;
+  const values = [username]
+  return db.query(sql, values)
+}
+
+const updateUsername = (user_name, body) => {
+  const sql = `UPDATE users SET user_name = $2 WHERE user_name = $1`
+  const values = [user_name, body.user_name];
+  return db.query(sql, values)
+};
+
 module.exports = {
     insert,
     read,
     update,
     del,
     totalData,
-    login
+    login,
+    updateUsername,
+    pwd
 };

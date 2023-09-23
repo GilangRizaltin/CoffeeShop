@@ -1,17 +1,20 @@
 const express = require("express");
 const usersRouter = express.Router();
+const {isLogin, isAdmin, isNormalUser} = require("../Middlewares/authorization")
 
 const {getUsers,
   register,
   updateUser,
   deleteUser,
-  userlogin} = require('../Handlers/users.handler')
+  userlogin, updateUserName} = require('../Handlers/users.handler')
 
 usersRouter.get("/", getUsers);
 
 usersRouter.post("/", register);
 
-usersRouter.patch("/:id", updateUser);
+usersRouter.patch("/",isLogin, updateUser);
+
+usersRouter.patch("/username",isLogin, updateUserName);
 
 usersRouter.delete("/:id", deleteUser);
 

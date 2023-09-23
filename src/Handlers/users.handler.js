@@ -1,4 +1,4 @@
-const {insert, read, update, del, totalData, login} = require("../Models/users.model")
+const {insert, read, update, del, totalData, login, updateUsername, pwd} = require("../Models/users.model")
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
@@ -63,17 +63,46 @@ const register = async (req, res) => {
   };
 };
 
+const updateUserName = async (req,res) => {
+  const {body} = req;
+  const {user_name, user_type} = req.userInfo;
+      await updateUsername(user_name, body);
+      const payload = {
+      user_name, user_type, 
+      };
+      payload.user_name = body.user_name;
+      jwt.sign(payload, jwtKey,{
+        expiresIn: '10m',
+        issuer: issuerWho,
+      }, (error, token) => {
+        if (error) throw error;
+        res.status(200).json({
+          msg: `Successfullly change username`,
+          data: {
+            token
+          }
+        });
+      });
+}
+
 const updateUser = async (req, res) => {
   try {
-    const { params, body } = req;
+    const {user_name} = req.userInfo;
+    const {body} = req;
     let hashedPwd = null;
     if (body.password_user) {
+      const data = await pwd(user_name);
+      const {password_user} = data.rows[0]
+      if (!await argon.verify(password_user, body.last_password))
+      return res.status(404).json({
+        msg: "Password Unmatched"
+      });
       hashedPwd = await argon.hash(body.password_user);
-    }
-    const result = await update(params, body, hashedPwd);
+    };
+    const result = await update(user_name, body, hashedPwd);
     if (result.rowCount === 0) {
       return res.status(404).json({
-        msg: `User dengan id ${params.id} tidak ditemukan`,
+        msg: `User dengan username ${user_name} tidak ditemukan`,
       });
     }
     res.status(201).json({
@@ -166,5 +195,6 @@ const userlogin = async (req, res) => {
     register,
     updateUser,
     deleteUser,
-    userlogin
+    userlogin,
+    updateUserName
 };
