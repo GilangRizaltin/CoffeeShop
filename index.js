@@ -5,6 +5,8 @@ const express = require("express"); // mengambil library express
 //generate express aplication
 const server = express();
 
+server.use(express.static("./public"));
+
 //parser untuk json dan url encode
 server.use(express.json());
 server.use(express.urlencoded({extended: false}));

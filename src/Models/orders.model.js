@@ -74,10 +74,10 @@ const page = (pages) => {
       return db.query(sql, value);
 };
 
-const insertOrder = (params, body) => {
+const insertOrder = (user_name, body) => {
     const sql = `INSERT INTO orders(user_id, subtotal, promo_id, percent_discount, flat_discount, serve_id, fee, tax, total_transactions, payment_type, status)
       VALUES (
-          $1,
+          (select id from users where user_name = $1),
           $2,
           $3,
           (SELECT percent_amount FROM promos WHERE id = $3),
@@ -87,16 +87,15 @@ const insertOrder = (params, body) => {
           0.1,
           $5,
           $6,
-          $7
+          'On progress'
       ) returning id;`;
     const values = [
-      params.user_id,
+      user_name,
       body.subtotal,
       body.promo_id,
       body.serve_id,
       body.total_transactions,
-      body.payment_type,
-      body.statuses,
+      body.payment_type
     ];
     return db.query(sql, values);
   };

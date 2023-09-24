@@ -7,13 +7,13 @@ const {getAllPromos,
   EditPromo,
   deletePromo,} = require("../Handlers/promos.handler")
 
-promosRouter.get("/", getAllPromos);
+promosRouter.get("/",isLogin, getAllPromos);
 
-promosRouter.post("/create", createNewPromo);
+promosRouter.post("/",isLogin, isAdmin, createNewPromo);
 
-promosRouter.patch("/update/:id", EditPromo);
+promosRouter.patch("/:id",isLogin, isAdmin, EditPromo);
 
-promosRouter.delete("/delete/:id", deletePromo);
+promosRouter.delete("/:id",isLogin, isAdmin, deletePromo);
 
 
 module.exports = promosRouter;

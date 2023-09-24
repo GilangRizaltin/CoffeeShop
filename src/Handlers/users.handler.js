@@ -2,6 +2,7 @@ const {insert, read, update, del, totalData, login, updateUsername, pwd} = requi
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
+const { sendMail } = require("../Utils/sendMail");
 
 const getUsers = async (req,res,next) => {
   try {
@@ -40,10 +41,22 @@ const register = async (req, res) => {
     const hashedPassword = await argon.hash(body.password)
     const data = await insert(body, hashedPassword);
     const createdUser = data.rows[0];
+    const OTP = Math.floor(100000 + Math.random() * 900000);
     res.status(201).json({
       msg: `User berhasil dibuat. id anda = ${createdUser.id} dengan nama : ${createdUser.full_name}`,
       result: createdUser,
+      check: "Silahkan cek email dab lakukan aktivasi"
     });
+    const info = await sendMail({
+      to: body.email,
+      subject: "Email Activation",
+      data: {
+        username: body.username,
+        activationLink: "https",
+        OTP_Number: OTP
+      }
+    });
+    req.userInfo = OTP
   } catch (error) {
     if (error.code === "23505" && error.constraint === "users_user_name_key") {
       return res.status(400).json({
@@ -190,6 +203,16 @@ const userlogin = async (req, res) => {
       msg: "Internal Server Error"
     });
   };
+}
+
+const userActivation = async (req, res) => {
+  try {
+    const {query} = req;
+    const {user_name, user_type} = req.userInfo;
+  } catch (error) {
+    
+  }
+
 }
 
   module.exports = {

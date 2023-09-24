@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper {
+      height: 100vh;
+      background-color: antiquewhite;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .box {
+      border: solid black 2px;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    h1,
+    p,
+    a {
+      margin: 10px 0;
+    }
+  </style>
+  <body>
+    <!-- data: username, uri untuk aktivasi -->
+    <div class="wrapper">
+      <div class="box">
+        <h1>SELAMAT DATANG, {{username}}</h1>
+        <p>Terimakasih telah bergabung pada aplikasi kami</p>
+        <p>Untuk aktivasi, silahkan klik tombol dibawah</p>
+        <h2>Kode OTP = {{OTP_Number}}</h2>
+        <a href="{{activationLink}}"
+          ><button type="button">AKTIVASI EMAIL</button></a
+        >
+      </div>
+    </div>
+  </body>
+</html>

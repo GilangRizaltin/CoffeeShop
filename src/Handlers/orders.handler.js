@@ -34,7 +34,6 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-
 const softDeleteOrder = (req,res) => {
     const {body} = req;
     del(body.order_id)
@@ -55,10 +54,11 @@ const softDeleteOrder = (req,res) => {
 
   const transactions = async (req, res) => {
     const client = await db.connect();
+    const {user_name} = req.userInfo;
     try {
       await client.query("begin");
-      const { body, params } = req;
-      const orderResult = await insertOrder(params, body);
+      const { body } = req;
+      const orderResult = await insertOrder(user_name, body);
       const productInsertPromises = body.products.map((product) => {
         return insertProductOrder(orderResult.rows[0].id, product);
       });

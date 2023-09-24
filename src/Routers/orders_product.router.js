@@ -6,10 +6,10 @@ const {getAllOrdersProducts,
   deleteOrderProduct,
   updateQuantity} = require("../Handlers/orders_products.handler")
 
-ordersProductRouter.get("/", getAllOrdersProducts);
+ordersProductRouter.get("/",isLogin, isAdmin, getAllOrdersProducts);
 
-ordersProductRouter.patch("/", updateQuantity);
+ordersProductRouter.patch("/",isLogin, isAdmin, updateQuantity);
 
-ordersProductRouter.delete("/:id", deleteOrderProduct);
+ordersProductRouter.delete("/:id",isLogin, isAdmin, deleteOrderProduct);
 
 module.exports = ordersProductRouter;
