@@ -10,13 +10,19 @@ const getAllPromos = async (req,res,) => {
           msg: "Data not found"
         });
       };
+      let pages = 1;
+      if (query.page) {
+        pages = parseInt(query.page)
+      }
       const totalPromos = parseInt(muchData.rows[0].total_promo);
-      const lastPage = Math.ceil(totalPromos / 4) <= parseInt(query.page);
+      const lastPage = Math.ceil(totalPromos / 4) <= pages;
+      const nextPage = pages + 1;
+      const prevPage = pages - 1;
       const meta = {
-      page: parseInt(query.page) || 1,
+      page: pages || 1,
       totalProduct: totalPromos,
-      next: lastPage ? null : "",
-      prev: parseInt(query.page) === 1 ? null : ""
+      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + nextPage}`,
+      prev: pages === 1 ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
       }
       res.status(200).json({
           msg: "Success",

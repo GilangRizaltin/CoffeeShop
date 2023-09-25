@@ -28,6 +28,6 @@ mainRouter.use("/users", usersRouter);
 mainRouter.use("/promos", promosRouter);
 mainRouter.use("/orders", ordersRouter);
 mainRouter.use("/orderproduct", ordersProductRouter);
-mainRouter.use("/auth", authRouter);
+// mainRouter.use("/auth", authRouter);
 
 module.exports = mainRouter;

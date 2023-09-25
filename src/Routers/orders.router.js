@@ -4,7 +4,7 @@ const {isLogin, isAdmin, isNormalUser} = require("../Middlewares/authorization")
 
 const {getAllOrders, softDeleteOrder,transactions, updateStat} = require("../Handlers/orders.handler")
 
-ordersRouter.get("/",isLogin, isAdmin, getAllOrders);
+ordersRouter.get("/",getAllOrders);
 
 ordersRouter.post("/:user_id",isLogin, isNormalUser, transactions);
 

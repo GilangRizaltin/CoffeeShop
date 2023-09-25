@@ -24,7 +24,7 @@ const sendMail = ({to, subject, data}) => {
     const fileDir = path.join(__dirname, "../Template/html/test-mail.html");
     const template = fs.readFileSync(fileDir, "utf8");
     const mailOption = {
-        from: '"Gilang Rizaltin 👻" <gilangzaltin@gmail.com>',
+        from: '"Gilang Rizaltin " <gilangzaltin@gmail.com>',
         to,
         subject,
         html: mustache.render(template, {...data}),

@@ -16,18 +16,24 @@ const getProducts = async (req, res, next) => {
         msg: "Data not found"
       });
     };
-    const totalProduct = parseInt(muchData.rows[0].total_product);
-      const lastPage = Math.ceil(totalProduct / 4) <= parseInt(query.page);
+    let pages = 1;
+      if (query.page) {
+        pages = parseInt(query.page)
+      }
+    const totalProduct = parseInt(muchData.rows[0].Total_product);
+      const lastPage = Math.ceil(totalProduct / 4) <= pages;
+      const nextPage = pages + 1;
+      const prevPage = pages - 1;
       const meta = {
-      page: parseInt(query.page) || 1,
+      page: pages || 1,
       totalProduct: totalProduct,
-      next: lastPage ? null : "",
-      prev: parseInt(query.page) === 1 ? null : ""
+      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + nextPage}`,
+      prev: pages === 1 || (!query.page) ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
       };
     res.status(200).json({
       msg: "Success",
       result: result.rows,
-      meta
+      meta,
     });
   } catch (error) {
     console.log(error);
@@ -37,16 +43,21 @@ const getProducts = async (req, res, next) => {
   }
 };
 
-
 const addProducts = (req, res) => {
   const {body} = req;
+  let fileLink = "";
+  if (!req.file.filename) {
+    fileLink = `/public/images/product-image-1695610823722-801707897.png`
+  }
+  fileLink = `/public/img/${req.file.filename}`;
     insert(body.product_name,
       body.categories_id,
       body.description,
-      body.price_default)
+      body.price_default,
+      fileLink)
     .then((data) => {
       res.status(201).json({
-        msg: "Product berhasil ditambah",
+        msg: `Product ${body.product_name} berhasil ditambah`,
         result: data.rows,
       });
     })
@@ -61,7 +72,11 @@ const addProducts = (req, res) => {
 const updateProducts = async (req, res) => {
   try {
     const {params, body} = req;
-    const result = await update(params, body);
+    let fileLink = ``;
+    if (req.file) {
+      fileLink += `/public/images/${req.file.filename}`;
+    };
+    const result = await update(params, body, fileLink);
     if (result.rowCount === 0) {
       return res.status(404).json({
         msg: `Produk dengan id ${params.id} tidak ditemukan`,
@@ -114,10 +129,4 @@ const popularProducts = async (req,res) => {
   };
 
 
-module.exports = {
-  getProducts,
-  addProducts,
-  updateProducts,
-  deleteProducts,
-  popularProducts
-};
+module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts};

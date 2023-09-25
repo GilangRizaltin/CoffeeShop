@@ -12,15 +12,20 @@ const getAllOrders = async (req, res) => {
         msg: "Data not found"
       });
     };
+    let pages = 1;
+    if (query.page) {
+      pages = parseInt(query.page)
+    }
     const totalOrders = parseInt(muchData.rows[0].Total_Orders);
-      const lastPage = Math.ceil(totalOrders / 4) <= parseInt(query.page);
+      const lastPage = Math.ceil(totalOrders / 4) <= pages;
+      const nextPage = pages + 1;
+      const prevPage = pages - 1;
       const meta = {
-      page: parseInt(query.page) || 1,
+      page: pages || 1,
       totalOrders: totalOrders,
-      next: lastPage ? null : "/orders?page=2&sortBy",
-      prev: parseInt(query.page) === 1 ? null : ""
+      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + nextPage}`,
+      prev: pages === 1 ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
       };
-//      console.log(req.originalUrl)
     res.status(200).json({
       msg: "Success",
       result: orders.rows,
@@ -43,7 +48,7 @@ const softDeleteOrder = (req,res) => {
           msg: `Order dengan id ${body.order_id} tidak ditemukan.`,
         })
       } res.status(201).json({
-        msg: `Order dengan id ${value[0]} berhasil dihapus`
+        msg: `Order dengan id ${body.order_id} berhasil dihapus`
       })
     }) .catch((err) => {
       res.status(500).json({

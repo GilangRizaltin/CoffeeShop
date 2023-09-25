@@ -1,4 +1,4 @@
-const {insert, read, update, del, totalData, login, updateUsername, pwd} = require("../Models/users.model")
+const {insert, read, update, del, totalData, login, updateUsername, pwd, verification, userActive, out} = require("../Models/users.model")
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
@@ -14,13 +14,19 @@ const getUsers = async (req,res,next) => {
           msg: "Data not found"
         });
       };
+      let pages = 1;
+      if (query.page) {
+        pages = parseInt(query.page)
+      }
       const totalUser = parseInt(muchData.rows[0].total_user);
-      const lastPage = Math.ceil(totalUser / 4) <= parseInt(query.page);
+      const nextPage = pages + 1;
+      const prevPage = pages - 1;
+      const lastPage = Math.ceil(totalUser / 4) <= pages;
       const meta = {
-      page: parseInt(query.page) || 1,
+      page: pages,
       totalUser: totalUser,
-      next: lastPage ? null : "",
-      prev: parseInt(query.page) === 1 ? null : ""
+      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + nextPage}`,
+      prev: pages === 1 || (!query.page) ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
       };
       res.status(200).json({
           msg: "Success",
@@ -37,46 +43,49 @@ const getUsers = async (req,res,next) => {
 
 const register = async (req, res) => {
   try {
-    const {body} = req;
-    const hashedPassword = await argon.hash(body.password)
+    const { body } = req;
+    const hashedPassword = await argon.hash(body.password);
     const data = await insert(body, hashedPassword);
     const createdUser = data.rows[0];
-    const OTP = Math.floor(100000 + Math.random() * 900000);
+//  const OTP = Math.floor(100000 + Math.random() * 900000);
     res.status(201).json({
       msg: `User berhasil dibuat. id anda = ${createdUser.id} dengan nama : ${createdUser.full_name}`,
       result: createdUser,
-      check: "Silahkan cek email dab lakukan aktivasi"
+      check: "Please check E-mail and activated"
     });
     const info = await sendMail({
       to: body.email,
       subject: "Email Activation",
       data: {
         username: body.username,
-        activationLink: "https",
-        OTP_Number: OTP
+        activationLink: `http://localhost:9000/users/verification/?user_name=${body.user_name}`,
+        // OTP_Number: OTP
       }
     });
-    req.userInfo = OTP
+//    req.userInfo = OTP
   } catch (error) {
     if (error.code === "23505" && error.constraint === "users_user_name_key") {
       return res.status(400).json({
-        msg: "Username already exist"
+        msg: "Username already exists"
       });
-    };
+    }
     if (error.code === "23505" && error.constraint === "users_phone_key") {
       return res.status(400).json({
         msg: "Phone number has been previously registered"
       });
-    };
+    }
     if (error.code === "23505" && error.constraint === "users_email_key") {
       return res.status(400).json({
         msg: "E-mail already registered"
       });
-    } res.status(500).json({
-      msg: "Internal server error",
-    });console.log(error);
-  };
+    }
+    console.error(error);
+    res.status(500).json({
+      msg: "Internal server error"
+    });
+  }
 };
+
 
 const updateUserName = async (req,res) => {
   const {body} = req;
@@ -170,6 +179,12 @@ const deleteUser = (req,res) => {
 const userlogin = async (req, res) => {
   try {
     const {body} = req;
+    let activated = await userActive(body);
+    if (activated.rows[0].activated === false) {
+      res.status(400).json({
+        msg: "Please activate email first"
+      });
+    }
     const result = await login(body);
     if (result.rowCount === 0) {
       return res.status(404).json({
@@ -190,6 +205,7 @@ const userlogin = async (req, res) => {
       issuer: issuerWho,
     }, (error, token) => {
       if (error) throw error;
+//      console.log(activated)
       res.status(200).json({
         msg: "Successfully Login",
         data: {
@@ -208,18 +224,34 @@ const userlogin = async (req, res) => {
 const userActivation = async (req, res) => {
   try {
     const {query} = req;
-    const {user_name, user_type} = req.userInfo;
+    const verif = await verification(query)
+    res.status(200).json({
+      msg: "Activation completed"
+    })
   } catch (error) {
-    
-  }
+    console.log(error)
+    res.status(500).json({
+      msg: "Internal Server Error"
+    });
+  };
+};
+
+const userLogout = async (req, res) => {
+  try {
+  const bearer = req.header("Authorization")
+  const token = bearer.split(" ")[1];
+  const logout = await out(token);
+  res.status(200).json({
+    msg: `Log out success. Thank you`
+  })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: "Internal Server Error"
+    });
+  };
+  
 
 }
 
-  module.exports = {
-    getUsers,
-    register,
-    updateUser,
-    deleteUser,
-    userlogin,
-    updateUserName
-};
+  module.exports = {getUsers,register,updateUser,deleteUser,userlogin,updateUserName,userActivation,userLogout};

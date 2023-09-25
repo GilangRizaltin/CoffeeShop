@@ -1,14 +1,20 @@
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
+const {valid} = require("../Models/users.model")
 
-
-const isLogin = (req, res, next) => {
+const isLogin = async (req, res, next) => {
     const bearer = req.header("Authorization")
     if(!bearer) 
         return res.status(401).json({
             msg: "Please log in first"
         });
     const token = bearer.split(" ")[1];
+    const data = await valid(token);
+    if (data.rowCount > 0) {
+        return res.status(400).json({
+            msg: "Invalid log, please log in again"
+        });
+    };
     jwt.verify(token, jwtKey, {issuerWho}, (error, decode) => {
         if(error)
         switch (error.name) {

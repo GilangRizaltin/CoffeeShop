@@ -7,7 +7,7 @@ const {getAllPromos,
   EditPromo,
   deletePromo,} = require("../Handlers/promos.handler")
 
-promosRouter.get("/",isLogin, getAllPromos);
+promosRouter.get("/",getAllPromos);
 
 promosRouter.post("/",isLogin, isAdmin, createNewPromo);
 
