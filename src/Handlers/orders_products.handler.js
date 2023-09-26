@@ -20,11 +20,11 @@ const getAllOrdersProducts = async (req, res) => {
 
 const updateQuantity = async (req, res) => {
   try{
-    const {body} = req;
-    const result = await update(body.quantity, body.id);
+    const {body, params} = req;
+    const result = await update(body.quantity, params.id);
     if (result.rowCount === 0) {
       return res.status(404).json({
-        msg: `ID ${body.id} tidak ditemukan`,
+        msg: `ID ${params.id} tidak ditemukan`,
       });
     };
     res.status(201).json({

@@ -1,6 +1,48 @@
 const db = require("../Configs/postgre");
 const argon = require("argon2");
 
+const registering = (body, hashedPassword, OTP) => {
+    const sql =
+  "insert into users(full_name, email, user_type, password_user, otp) VALUES ($1, $2, 'Normal User', $3, $4) returning id, full_name";
+  const values = [
+    body.full_name,
+    body.email,
+    hashedPassword,
+    OTP
+  ];
+  return db.query(sql, values)  
+};
+
+const userActive = (body) => {
+  const sql = "select activated from users where email = $1;"
+  const value = [body.email];
+  return db.query(sql,value)
+}
+
+const login = (body) => {
+  const sql = `select id, password_user, user_type from users where email = $1`;
+  const values = [body.email]
+  return db.query(sql, values)
+}
+
+const verification = (query) => {
+  const sql = `select otp from users where email = $1`
+  const value = [query.email];
+  return db.query(sql, value)
+}
+
+const afterVerification = (query) => {
+  const sql = `update users set activated = true where email = $1`
+  const value = [query.email];
+  return db.query(sql, value)
+};
+
+const out = (token) => {
+  const sql = `insert into jwt (jwt_code) values ($1);`
+  const value = [token]
+  return db.query(sql, value)
+}
+
 const read = (query) => {
     let sql = `select u.id as "No.",
       u.user_name as "Username",
@@ -72,28 +114,13 @@ const totalData = (query) => {
   return db.query(sql, values);
 };
 
-const insert = (body, hashedPassword) => {
-    const sql =
-  "insert into users(user_name, full_name, phone, address, email, user_type, password_user) VALUES ($1, $2, $3, $4, $5, $6, $7) returning id, full_name";
-  const values = [
-    body.user_name,
-    body.full_name,
-    body.phone,
-    body.address,
-    body.email,
-    body.user_type,
-    hashedPassword
-  ];
-  return db.query(sql, values)  
-};
-
-const update = (user_name, body, hashedPwd) => {
+const update = (id, body, hashedPwd, fileLink) => {
   let sql = `UPDATE users SET `;
-  const values = [user_name];
+  const values = [id];
   let i = 1;
   if (!body.last_password)
   for (const [key, value] of Object.entries(body)) {
-    if (key !== "password_user" && "user_name") {
+    if (key !== "password_user") {
       sql += `${key} = $${i + 1}, `;
       values.push(value);
       i++;
@@ -103,7 +130,12 @@ const update = (user_name, body, hashedPwd) => {
     sql += `password_user = $${i + 1}, `;
     values.push(hashedPwd);
   }
-  sql += `update_at = now() WHERE user_name = $1 returning full_name`;
+  if (fileLink) {
+    sql += `user_photo_profile = $${i + 1}, `;
+    values.push(fileLink);
+    i++;
+  }
+  sql += `update_at = now() WHERE id = $1 returning full_name`;
   return db.query(sql, values);
 };
 
@@ -113,40 +145,10 @@ const del = (params) => {
   return db.query(sql, value);
 };
 
-const login = (body) => {
-  const sql = `select password_user, user_name, user_type from users where email = $1`;
-  const values = [body.email]
+const pwd = (id) => {
+  const sql = `select password_user from users where id = $1`;
+  const values = [id]
   return db.query(sql, values)
-}
-
-const pwd = (username) => {
-  const sql = `select password_user from users where user_name = $1`;
-  const values = [username]
-  return db.query(sql, values)
-}
-
-const updateUsername = (user_name, body) => {
-  const sql = `UPDATE users SET user_name = $2 WHERE user_name = $1`
-  const values = [user_name, body.user_name];
-  return db.query(sql, values)
-};
-
-const verification = (query) => {
-  const sql = `update users set activated = true where user_name = $1`
-  const value = [query.user_name];
-  return db.query(sql, value)
-}
-
-const out = (token) => {
-  const sql = `insert into jwt (jwt_code) values ($1);`
-  const value = [token]
-  return db.query(sql, value)
-}
-
-const userActive = (body) => {
-  const sql = "select activated from users where email = $1;"
-  const value = [body.email];
-  return db.query(sql,value)
 }
 
 const valid = (code) => {
@@ -155,5 +157,11 @@ const valid = (code) => {
   return db.query(sql,values)
 }
 
+const insert = (fileLink, body, hashedPwd) => {
+  const sql = `insert into users(user_photo_profile, user_name, full_name, phone, address, email, user_type, password_user)
+              values ($1, $2, $3, $4, $5, $6, $7, $8)`
+  const values = [fileLink, body.user_name, body.full_name, body.phone, body.address, body.email, body.user_type, hashedPwd ];
+  return db.query(sql, values)
+};
 
-module.exports = {insert,read,update,del,totalData,login,updateUsername,pwd,verification,userActive, out, valid};
+module.exports = {registering ,read,update,del,totalData,login,pwd,verification,userActive, out, valid, afterVerification, insert};

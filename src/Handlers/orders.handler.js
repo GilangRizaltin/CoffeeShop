@@ -40,15 +40,15 @@ const getAllOrders = async (req, res) => {
 };
 
 const softDeleteOrder = (req,res) => {
-    const {body} = req;
-    del(body.order_id)
+    const {params} = req;
+    del(params.order_id)
     .then((result) => {
       if (result.rowCount === 0) {
         return res.status(404).json({
-          msg: `Order dengan id ${body.order_id} tidak ditemukan.`,
+          msg: `Order dengan id ${params.order_id} tidak ditemukan.`,
         })
       } res.status(201).json({
-        msg: `Order dengan id ${body.order_id} berhasil dihapus`
+        msg: `Order dengan id ${params.order_id} berhasil dihapus`
       })
     }) .catch((err) => {
       res.status(500).json({
@@ -88,10 +88,10 @@ const softDeleteOrder = (req,res) => {
 
 const updateStat = async (req, res) => {
   try {
-    const {body} = req;
-    const result = await updateStatus(body);
+    const {body, params} = req;
+    const result = await updateStatus(body, params);
     res.status(201).json({
-      msg: `Status order untuk ID ${body.order_id} berhasil diubah menjadi ${body.statuses}`
+      msg: `Status order untuk ID ${params.id} berhasil diubah menjadi ${body.statuses}`
     });
   } catch (error) {
     console.log(error)

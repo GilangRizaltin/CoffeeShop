@@ -8,7 +8,7 @@ const {getAllOrdersProducts,
 
 ordersProductRouter.get("/",isLogin, isAdmin, getAllOrdersProducts);
 
-ordersProductRouter.patch("/",isLogin, isAdmin, updateQuantity);
+ordersProductRouter.patch("/:id",isLogin, isAdmin, updateQuantity);
 
 ordersProductRouter.delete("/:id",isLogin, isAdmin, deleteOrderProduct);
 

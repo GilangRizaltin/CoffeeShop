@@ -129,9 +129,9 @@ const insertOrder = (user_name, body) => {
     return db.query(sql, values);
   };
 
-const updateStatus = (body) => {
+const updateStatus = (params, body) => {
   const sql = "update orders set status = $1, updated_at = now() where id = $2;"
-  const values = [body.statuses, body.order_id]
+  const values = [body.statuses, params.id]
   return db.query(sql, values)
 };
 

@@ -7,8 +7,7 @@ const readOrdersProducts = (query) => {
     op.hot_or_not as "Hot ?",
     s.size_name as "Size",
     op.price as "Price per product",
-    op.quantity as "Quantity",
-    op.subtotal as "Subtotal"
+    op.quantity as "Quantity"
     from
     orders_products op
     inner join

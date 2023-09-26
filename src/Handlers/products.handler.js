@@ -47,7 +47,7 @@ const addProducts = (req, res) => {
   const {body} = req;
   let fileLink = "";
   if (!req.file.filename) {
-    fileLink = `/public/images/product-image-1695610823722-801707897.png`
+    fileLink = `/public/img/product-image-1695610823722-801707897.png`
   }
   fileLink = `/public/img/${req.file.filename}`;
     insert(body.product_name,

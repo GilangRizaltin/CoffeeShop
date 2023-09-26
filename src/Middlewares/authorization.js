@@ -33,8 +33,12 @@ const isLogin = async (req, res, next) => {
     });
     };
 
+// const isRole = async (req, res, next) => {
+//     const {user_type} = req.userInfo;
+// }
+
 const isNormalUser = (req, res, next) => {
-    const {user_name, user_type} = req.userInfo;
+    const {id, user_type} = req.userInfo;
     if(user_type !== 'Normal User')
     return res.status(403).json({
         msg: "Access Denied"
@@ -43,7 +47,7 @@ const isNormalUser = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-    const {user_name, user_type} = req.userInfo;
+    const {id, user_type} = req.userInfo;
     if(user_type !== 'Admin')
     return res.status(403).json({
         msg: "Access Denied"
