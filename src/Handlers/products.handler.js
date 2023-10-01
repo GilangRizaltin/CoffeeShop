@@ -1,10 +1,5 @@
-const { get,
-  insert,
-  update,
-  del,
-  popular,
-  totalData
-} = require("../Models/products.model");
+const { get,insert,update,del,popular,totalData, insertImage, updateImage} = require("../Models/products.model");
+const db = require("../Configs/postgre");
 
 const getProducts = async (req, res, next) => {
   try {
@@ -43,47 +38,56 @@ const getProducts = async (req, res, next) => {
   }
 };
 
-const addProducts = (req, res) => {
+const addProducts = async (req, res) => {
+  const client = await db.connect();
+  try {
+  await client.query("begin");
   const {body} = req;
   let fileLink = "";
-  if (!req.file.filename) {
-    fileLink = `/public/img/product-image-1695610823722-801707897.png`
+  const valueLink = []
+  const data = await insert(body.Product_Name,body.Categories,body.Description,body.Price)
+  const id = data.rows[0].id
+  // let {filename} = req.files
+  // fileLink = `/public/img/${filename}`;
+  // valueLink.push(fileLink)
+  if (req.files.filename) {
+    for ({filename} of req.files) {
+     fileLink = `/public/img/${filename}`;
+     valueLink.push(fileLink)
   }
-  fileLink = `/public/img/${req.file.filename}`;
-    insert(body.product_name,
-      body.categories_id,
-      body.description,
-      body.price_default,
-      fileLink)
-    .then((data) => {
-      res.status(201).json({
-        msg: `Product ${body.product_name} berhasil ditambah`,
+  for (let i = 0; i < valueLink.length; i++) {
+    await insertImage(id, valueLink[i])
+  }}
+  // const productInsertPromises = fileLink.push((fileLink) => {
+  // return insertProductOrder(id, fileLink);
+  // });
+  // await Promise.all(productInsertPromises);
+//  await insertImage(id, fileLink)
+  await client.query("commit");
+  res.status(201).json({
+        msg: `Product ${body.Product_Name} berhasil ditambah`,
         result: data.rows,
       });
-    })
-    .catch((error) => {
-      console.log(error);
+  } catch (error) {
+    await client.query("rollback");
+    console.log(error);
       res.status(500).json({
-        msg: "Internal server error",
+        msg: "Internal server error"
       });
-    });
-  };
+  }};
 
 const updateProducts = async (req, res) => {
   try {
     const {params, body} = req;
-    let fileLink = ``;
-    if (req.file) {
-      fileLink += `/public/images/${req.file.filename}`;
-    };
-    const result = await update(params, body, fileLink);
+    const result = await update(params, body);
     if (result.rowCount === 0) {
       return res.status(404).json({
-        msg: `Produk dengan id ${params.id} tidak ditemukan`,
+        msg: `Produk dengan id ${params.id} tidak ditemukan`
       });
     };
     res.status(201).json({
       msg: `Succesfully update product`,
+      update: body
     });
   } catch (err) {
     console.error(err);
@@ -92,6 +96,28 @@ const updateProducts = async (req, res) => {
     });
   }
   };
+
+const updateProductImage = async (req, res) => {
+  try {
+    const fileLink = req.file.filename;
+    const {params} = req;
+    const result = await updateImage(fileLink, params)
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        msg: `Product image with id ${params.id} not found`,
+        result: result.rows
+      });
+    };
+    res.status(201).json({
+      msg: `Succesfully update product image to ${fileLink}`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
+}
 
 const deleteProducts = (req,res) => {
   const {params} = req;
@@ -129,4 +155,4 @@ const popularProducts = async (req,res) => {
   };
 
 
-module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts};
+module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts, updateProductImage};

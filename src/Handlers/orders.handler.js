@@ -68,7 +68,6 @@ const softDeleteOrder = (req,res) => {
         return insertProductOrder(orderResult.rows[0].id, product);
       });
       await Promise.all(productInsertPromises);
-  
       await client.query("commit");
   
       res.status(201).json({
