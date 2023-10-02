@@ -1,4 +1,4 @@
-const {read,insert,update,del, totalData} = require("../Models/promos.model")
+const {read,insert,update,del, totalData} = require("../Models/promos.model");
 
 const getAllPromos = async (req,res,) => {
   try {
