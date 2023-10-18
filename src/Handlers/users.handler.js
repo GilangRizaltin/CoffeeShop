@@ -1,4 +1,4 @@
-const {registering, read, update, del, totalData, login, pwd, verification, userActive, out, afterVerification, insert} = require("../Models/users.model")
+const {registering, read, update, del, totalData, login, pwd, verification, userActive, out, afterVerification, insert, profile} = require("../Models/users.model")
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
@@ -33,11 +33,6 @@ const register = async (req, res) => {
             msg: "Username already exists"
       })
     }
-       if (error.constraint === "users_phone_key") {
-      return res.status(400).json({
-        msg: "Phone number has been previously registered"
-      });
-    }
     if (error.constraint === "users_email_key") {
       return res.status(400).json({
         msg: "E-mail already registered"
@@ -53,18 +48,18 @@ const register = async (req, res) => {
 const userlogin = async (req, res) => {
   try {
     const {body} = req;
-    let activated = await userActive(body);
-    if (activated.rows[0].activated === false) {
-      res.status(400).json({
-        msg: "Please activate email first"
-      });
-    }
     const result = await login(body);
     if (result.rowCount === 0) {
       return res.status(404).json({
         msg: "Invalid data"
       });
     };
+    let activated = await userActive(body);
+    if (activated.rows[0].activated === false) {
+      res.status(400).json({
+        msg: "Please activate email first"
+      });
+    }
     const {password_user, id, user_type} = result.rows[0];
     if (!await argon.verify(password_user, body.password)) {
       return res.status(401).json({
@@ -74,6 +69,11 @@ const userlogin = async (req, res) => {
     const payload = {
       id, user_type, 
     };
+    const userId = result.rows[0].id;
+    const userName = result.rows[0].user_name;
+    const photo = result.rows[0].user_photo_profile;
+    const fullName = result.rows[0].full_name;
+    const email = result.rows[0].email;
     jwt.sign(payload, jwtKey,{
       expiresIn: '20m',
       issuer: issuerWho,
@@ -83,8 +83,13 @@ const userlogin = async (req, res) => {
       res.status(200).json({
         msg: "Successfully Login",
         data: {
-          token
-        }
+          token,
+          userId,
+          userName,
+          fullName,
+          photo,
+          email
+        },
       });
     });
   } catch (error) {
@@ -169,6 +174,22 @@ const getUsers = async (req,res,next) => {
   }
 };
 
+const getUserPorfile = async (req, res) => {
+  try {
+    const {id} = req.userInfo;
+    const result = await profile(id)
+    res.status(200).json({
+      msg:"Success",
+      res: result.rows
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg:"Internal Error",
+    })
+  }
+}
+
 const addUser = async (req, res) => {
   try {
     const {body} = req;
@@ -213,7 +234,7 @@ const updateUser = async (req, res) => {
     const {body} = req;
     let fileLink = ``;
     if (req.file) {
-    fileLink += `/public/img/${req.file.filename}`;
+    fileLink += `/img/${req.file.filename}`;
     };
     let hashedPwd = null;
     if (body.password_user) {
@@ -233,6 +254,7 @@ const updateUser = async (req, res) => {
     // }
     res.status(201).json({
       msg: `Successfully update data for ${result.rows[0].full_name}`,
+      data: body,
     });
   } catch (err) {
     if (err.code === "23505" ) {
@@ -282,4 +304,4 @@ const deleteUser = (req,res) => {
 
 
 
-  module.exports = {getUsers,register,updateUser,deleteUser,userlogin,userActivation,userLogout, addUser};
+  module.exports = {getUsers,register,updateUser,deleteUser,userlogin,userActivation,userLogout, addUser, getUserPorfile};

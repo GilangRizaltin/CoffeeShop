@@ -105,27 +105,42 @@ const insertOrder = (id, body) => {
       VALUES (
           $1,
           $2,
-          $3,
+          $5,
           $4,
           (
               (SELECT price_default FROM products WHERE id = $2) + 
               (SELECT additional_fee FROM sizes WHERE id = $4)
           ),
-          $5,
+          $3,
           (
               (
                   (SELECT price_default FROM products WHERE id = $2) + 
                   (SELECT additional_fee FROM sizes WHERE id = $4)
-              ) * $5
+              ) * $3
           )
       )`;
     const values = [
       order_id,
       body.product_id,
-      body.hot_or_not,
-      body.size_id,
       body.quantity,
     ];
+    if (body.size_id === 'Small') {
+      values.push(1);
+    } else if (body.size_id === 'Medium') { 
+      values.push(2)
+    } else if (body.size_id === 'Large') { 
+      values.push(3)
+    } else if (body.size_id === 'Short') { 
+      values.push(4)
+    } else if (body.size_id === 'Regular') { 
+      values.push(5)
+    } else if (body.size_id === 'Grande') { 
+      values.push(6)
+    } else if (body.size_id === 'Venti') { 
+      values.push(7)}
+    if (body.hot_or_not === 'Hot') {
+      values.push(true);
+    } else { values.push(false)}
     return db.query(sql, values);
   };
 

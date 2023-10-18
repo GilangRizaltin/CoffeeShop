@@ -11,6 +11,14 @@ server.use(express.static("./public"));
 server.use(express.json());
 server.use(express.urlencoded({extended: false}));
 
+const cors = require("cors");
+server.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["PATCH","POST"],
+  })
+);
+
 server.listen(9000, () => {
   console.log("Server is running at port 9000");
 });

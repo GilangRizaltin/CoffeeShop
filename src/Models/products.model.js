@@ -1,8 +1,8 @@
 const db = require("../Configs/postgre");
 
-const get = (query) => {
+const get = (id, query) => {
   let sql = `
-    SELECT p.id AS "No.",
+    SELECT p.id AS "No",
     p.product_name AS "Product",
     c.category_name AS "Categories",
     p.description AS "Description",
@@ -12,6 +12,10 @@ const get = (query) => {
   `;
   const values = [];
   const conditions = [];
+  if (id) {
+    conditions.push(`p.id = ${values.length + 1}`);
+    values.push(id);
+  }
   if (query.search) {
     conditions.push(`p.product_name ILIKE $${values.length + 1}`);
     values.push(`%${query.search}%`);
@@ -47,11 +51,25 @@ const get = (query) => {
   }
   if (query.page) {
     const offset = (parseInt(query.page) - 1) * 3;
-    sql += ` LIMIT 3 OFFSET $${values.length + 1}`;
+    sql += ` LIMIT 6 OFFSET $${values.length + 1}`;
     values.push(offset);
   } else {
-    sql += ` LIMIT 3 OFFSET 0`;
+    sql += ` LIMIT 6 OFFSET 0`;
   }
+  return db.query(sql, values);
+};
+
+const getDetail = (id) => {
+  const values = [id];
+  const sql = `
+    SELECT p.id AS "No",
+    p.product_name AS "Product",
+    c.category_name AS "Categories",
+    p.description AS "Description",
+    p.price_default AS "Price"
+    FROM products p
+    JOIN categories c ON p.category = c.id
+    Where p.id = $1`;
   return db.query(sql, values);
 };
 
@@ -146,4 +164,4 @@ const popular = () => {
     return db.query(sql);
 };
 
-module.exports = {get,insert,update,del,popular,totalData,insertImage,updateImage};
+module.exports = {get,insert,update,del,popular,totalData,insertImage,updateImage,getDetail};

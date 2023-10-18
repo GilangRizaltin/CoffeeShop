@@ -20,7 +20,7 @@ const userActive = (body) => {
 }
 
 const login = (body) => {
-  const sql = `select id, password_user, user_type from users where email = $1`;
+  const sql = `select id, user_name, full_name, email, user_photo_profile, password_user, user_type from users where email = $1`;
   const values = [body.email]
   return db.query(sql, values)
 }
@@ -45,6 +45,7 @@ const out = (token) => {
 
 const read = (query) => {
     let sql = `select u.id as "No.",
+      u.user_photo_profile as "Profile Photo",
       u.user_name as "Username",
       u.full_name as "Name",
       u.phone as "Phone Number",
@@ -83,6 +84,20 @@ const read = (query) => {
   sql += ` LIMIT 3 OFFSET ($1 * 3) - 3`;
   return db.query(sql, values);
 };
+
+const profile = (id) => {
+  const value = [id]
+  const sql = `select u.user_photo_profile as "Profile Photo",
+      u.user_name as "Username",
+      u.full_name as "Name",
+      u.phone as "Phone Number",
+      u.address as "Address",
+      u.email as "E-Mail",
+      u.user_type as "User Type"
+      from users u
+      where u.id = $1`
+  return db.query(sql, value)
+}
 
 const totalData = (query) => {
   let sql = `SELECT COUNT(*) AS "total_user" FROM users u`;
@@ -164,4 +179,4 @@ const insert = (fileLink, body, hashedPwd) => {
   return db.query(sql, values)
 };
 
-module.exports = {registering ,read,update,del,totalData,login,pwd,verification,userActive, out, valid, afterVerification, insert};
+module.exports = {registering ,read,update,del,totalData,login,pwd,verification,userActive, out, valid, afterVerification, insert, profile};

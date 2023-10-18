@@ -1,10 +1,10 @@
-const { get,insert,update,del,popular,totalData, insertImage, updateImage} = require("../Models/products.model");
+const { get,insert,update,del,popular,totalData, insertImage, updateImage,getDetail} = require("../Models/products.model");
 const db = require("../Configs/postgre");
 
-const getProducts = async (req, res, next) => {
+const getProducts = async (req, res) => {
   try {
-    const { query } = req;
-    const result = await get(query);
+    const {params, query} = req;
+    const result = await get(params.id, query);
     const muchData = await totalData(query);
     if (result.rowCount === 0) {
       return res.status(404).json({
@@ -16,7 +16,7 @@ const getProducts = async (req, res, next) => {
         pages = parseInt(query.page)
       }
     const totalProduct = parseInt(muchData.rows[0].Total_product);
-      const lastPage = Math.ceil(totalProduct / 4) <= pages;
+      const lastPage = Math.ceil(totalProduct / 6) <= pages;
       const nextPage = pages + 1;
       const prevPage = pages - 1;
       const meta = {
@@ -37,6 +37,27 @@ const getProducts = async (req, res, next) => {
     });
   }
 };
+
+const getDetailProduct = async (req,res) => {
+  try {
+    const {params} = req;
+    const result = await getDetail(params.id);
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        msg: "Data not found"
+      });
+    };
+    res.status(200).json({
+      msg: "Success",
+      result: result.rows,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
+}
 
 const addProducts = async (req, res) => {
   const client = await db.connect();
@@ -155,4 +176,4 @@ const popularProducts = async (req,res) => {
   };
 
 
-module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts, updateProductImage};
+module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts, updateProductImage,getDetailProduct};

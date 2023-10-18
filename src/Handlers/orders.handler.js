@@ -63,6 +63,11 @@ const softDeleteOrder = (req,res) => {
     try {
       await client.query("begin");
       const { body } = req;
+      const hot = true;
+      const size = ''
+      // if (body.hot_or_not === hot) 
+      // {hot = true} else {hot = false}
+      // if (body.size_id === )
       const orderResult = await insertOrder(id, body);
       const productInsertPromises = body.products.map((product) => {
         return insertProductOrder(orderResult.rows[0].id, product);
