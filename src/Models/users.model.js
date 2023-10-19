@@ -87,13 +87,14 @@ const read = (query) => {
 
 const profile = (id) => {
   const value = [id]
-  const sql = `select u.user_photo_profile as "Profile Photo",
-      u.user_name as "Username",
-      u.full_name as "Name",
-      u.phone as "Phone Number",
-      u.address as "Address",
-      u.email as "E-Mail",
-      u.user_type as "User Type"
+  const sql = `select u.user_photo_profile as "user_photo_profile",
+      u.user_name as "user_name",
+      u.full_name as "full_name",
+      u.phone as "phone",
+      u.address as "address",
+      u.email as "email",
+      u.user_type as "user_type",
+      u.created_at as "since"
       from users u
       where u.id = $1`
   return db.query(sql, value)

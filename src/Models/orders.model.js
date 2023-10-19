@@ -79,24 +79,31 @@ const insertOrder = (id, body) => {
       VALUES (
           $1,
           $2,
-          $3,
-          (SELECT percent_amount FROM promos WHERE id = $3),
-          (SELECT flat_amount FROM promos WHERE id = $3),
-          $4,
-          (SELECT fee FROM serve WHERE id = $4),
-          0.1,
           $5,
+          (SELECT percent_amount FROM promos WHERE id = $5),
+          (SELECT flat_amount FROM promos WHERE id = $5),
           $6,
+          (SELECT fee FROM serve WHERE id = $6),
+          0.1,
+          $3,
+          $4,
           'On progress'
       ) returning id;`;
     const values = [
       id,
       body.subtotal,
-      body.promo_id,
-      body.serve_id,
       body.total_transactions,
-      body.payment_type
+      body.payment_type,
+      body.promo_id,
     ];
+    if (body.serve_id === 'Take Away') {
+      values.push(1);
+    } else if (body.serve_id === 'Delivery') { 
+      values.push(2)
+    } else if (body.serve_id === 'Dine In') { 
+      values.push(3)
+    } else if (body.serve_id === 'Pick Up') { 
+      values.push(4)}
     return db.query(sql, values);
   };
   
