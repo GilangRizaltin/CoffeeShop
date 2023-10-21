@@ -26,6 +26,37 @@ const read = (query) => {
     return db.query(sql, values);
 };
 
+const readOnId = (query, id) => {
+  let sql = `select o.id as "No",
+    u.full_name  as "User",
+    o.subtotal as "Subtotal",
+    p.promo_code as "Promo_Code",
+    o.percent_discount as "Discount_Percentage",
+    o.flat_discount as "Discount_Flat",
+    s.serve_type as "Serving_Type",
+    o.fee as "Serving_Fee",
+    o.tax as "Tax",
+    o.total_transactions as "Total_Transactions",
+    py.payment_name as "Payment_Type",
+    o.status as "Status",
+    o.created_at as "Date"
+    from orders o
+    join users u on o.user_id = u.id
+    join promos p on o.promo_id = p.id
+    join serve s on o.serve_id = s.id 
+    join payment_type py on o.payment_type = py.id
+    where o.user_id = $2`;
+    const values = [parseInt(query.page) || 1, id];
+    sql += ` LIMIT 4 OFFSET ($1 * 4) - 4`;
+    return db.query(sql, values);
+}
+
+const totalDataOrdersId = (id) => {
+  let sql = `SELECT COUNT(*) AS "Total_Orders" FROM orders o where o.user_id = $1`;
+  const values = [id]
+  return db.query(sql, values);
+};
+
 const totalData = () => {
   let sql = `SELECT COUNT(*) AS "Total_Orders" FROM orders o`;
   return db.query(sql);
@@ -165,5 +196,7 @@ module.exports = {
     insertOrder,
     insertProductOrder,
     updateStatus,
-    totalData
+    totalData,
+    readOnId,
+    totalDataOrdersId
 }

@@ -1,4 +1,4 @@
-const {read, del,insertOrder, insertProductOrder, updateStatus, totalData} = require("../Models/orders.model")
+const {read, del,insertOrder, insertProductOrder, updateStatus, totalData, readOnId, totalDataOrdersId} = require("../Models/orders.model")
 
 const db = require("../Configs/postgre");
 
@@ -38,6 +38,39 @@ const getAllOrders = async (req, res) => {
     });
   }
 };
+
+const getOrdersOnId = async (req, res) => {
+  const {id} = req.userInfo
+  const { query } = req;
+  try {
+    const result = await readOnId(query, id)
+    const muchData = await totalDataOrdersId(id)
+    let pages = 1;
+    if (query.page) {
+      pages = parseInt(query.page)
+    }
+    const totalOrders = parseInt(muchData.rows[0].Total_Orders);
+    const lastPage = Math.ceil(totalOrders / 4) <= pages;
+    const nextPage = pages + 1;
+    const prevPage = pages - 1;
+    const meta = {
+    page: pages || 1,
+    totalOrders: totalOrders,
+    next: lastPage ? null : `http://localhost:9000/orders/order?page=${nextPage}`,
+    prev: pages === 1 ? null : `http://localhost:9000/orders/order?page=${prevPage}`
+    };
+  res.status(200).json({
+    msg: "Success",
+    result: result.rows,
+    meta
+  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
+}
 
 const softDeleteOrder = (req,res) => {
     const {params} = req;
@@ -105,4 +138,4 @@ const updateStat = async (req, res) => {
   }
 };
 
-module.exports = {getAllOrders, softDeleteOrder, transactions, updateStat};
+module.exports = {getAllOrders, softDeleteOrder, transactions, updateStat, getOrdersOnId};
