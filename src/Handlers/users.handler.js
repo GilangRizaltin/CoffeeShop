@@ -72,8 +72,6 @@ const userlogin = async (req, res) => {
     const userId = result.rows[0].id;
     const userName = result.rows[0].user_name;
     const photo = result.rows[0].user_photo_profile;
-    const fullName = result.rows[0].full_name;
-    const email = result.rows[0].email;
     jwt.sign(payload, jwtKey,{
       expiresIn: '20m',
       issuer: issuerWho,
@@ -86,9 +84,7 @@ const userlogin = async (req, res) => {
           token,
           userId,
           userName,
-          fullName,
           photo,
-          email
         },
       });
     });

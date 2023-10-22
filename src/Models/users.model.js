@@ -20,7 +20,7 @@ const userActive = (body) => {
 }
 
 const login = (body) => {
-  const sql = `select id, user_name, full_name, email, user_photo_profile, password_user, user_type from users where email = $1`;
+  const sql = `select id, user_name, user_photo_profile, password_user, user_type from users where email = $1`;
   const values = [body.email]
   return db.query(sql, values)
 }
