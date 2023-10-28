@@ -3,6 +3,7 @@ const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
 const { sendMail } = require("../Utils/sendMail");
+const { resetPwdMail } = require("../Utils/resetPwdMail")
 
 const register = async (req, res) => {
   try {
@@ -56,7 +57,7 @@ const userlogin = async (req, res) => {
     };
     let activated = await userActive(body);
     if (activated.rows[0].activated === false) {
-      res.status(400).json({
+      return res.status(400).json({
         msg: "Please activate email first"
       });
     }
@@ -72,8 +73,9 @@ const userlogin = async (req, res) => {
     const userId = result.rows[0].id;
     const userName = result.rows[0].user_name;
     const photo = result.rows[0].user_photo_profile;
+    const type = result.rows[0].user_type;
     jwt.sign(payload, jwtKey,{
-      expiresIn: '20m',
+      expiresIn: '30m',
       issuer: issuerWho,
     }, (error, token) => {
       if (error) throw error;
@@ -85,6 +87,7 @@ const userlogin = async (req, res) => {
           userId,
           userName,
           photo,
+          type
         },
       });
     });
@@ -191,9 +194,9 @@ const addUser = async (req, res) => {
     const {body} = req;
     let fileLink = "";
     if (!req.file.filename) {
-    fileLink = `/public/img/product-image-1695610823722-801707897.png`
+    fileLink = `/img/product-image-1695610823722-801707897.png`
     }
-    fileLink = `/public/img/${req.file.filename}`;
+    fileLink = `/img/${req.file.filename}`;
     const hashedPwd = await argon.hash(body.password);
     const result = await insert(fileLink, body, hashedPwd);
     res.status(201).json({
@@ -296,7 +299,33 @@ const deleteUser = (req,res) => {
   });
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const {query} = req;
+    const data = await read(query);
+    if (data.rows.length = 0) 
+    return res.status(404).json({
+      msg:"Your Account not Found"
+    });
+    const info = await sendMail({
+      to: body.email,
+      subject: "Email Activation",
+      data: {
+        username: data.rows[0].Username,
+        activationLink: `http://localhost:9000/users/resetpassword/?email=${query.email}&OTP${data.rows[0].otp}`,
+      }
+    });
+    res.status(201).json({
+      msg: `Please check E-mail reset password`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      msg: "Internal Server Error"
+    })
+  }
+}
 
+const newPassword = () => {}
 
 
 

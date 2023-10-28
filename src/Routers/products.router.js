@@ -5,13 +5,15 @@ const {singleUpload, multiUpload} = require("../Middlewares/diskUpload");
 
 const {getProducts, addProducts,
   updateProducts, deleteProducts,
-popularProducts, updateProductImage,getDetailProduct} = require("../Handlers/products.handler")
+popularProducts, updateProductImage,getDetailProduct, getStatistic} = require("../Handlers/products.handler")
 
 productsRouter.get("/", getProducts);
 
+productsRouter.get("/state", getStatistic);
+
 productsRouter.get("/:id", getDetailProduct);
 
-productsRouter.post("/",isLogin, isAdmin, multiUpload("product_image", 3), addProducts);
+productsRouter.post("/",isLogin, isAdmin, multiUpload("product_image", 4), addProducts);
 
 productsRouter.patch("/:id",isLogin, isAdmin,  updateProducts);
 

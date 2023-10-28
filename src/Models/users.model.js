@@ -45,13 +45,14 @@ const out = (token) => {
 
 const read = (query) => {
     let sql = `select u.id as "No.",
-      u.user_photo_profile as "Profile Photo",
+      u.user_photo_profile as "Profile_Photo",
       u.user_name as "Username",
       u.full_name as "Name",
-      u.phone as "Phone Number",
+      u.phone as "Phone_Number",
       u.address as "Address",
-      u.email as "E-Mail",
-      u.user_type as "User Type"
+      u.email as "E_Mail",
+      u.user_type as "User_Type",
+      u.otp as "otp"
       from users u`
       const values = [parseInt(query.page) || 1];
   const conditions = [];
@@ -81,7 +82,7 @@ const read = (query) => {
   const sortColumn = query.sortBy || 'u.id';
   const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
   sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
-  sql += ` LIMIT 3 OFFSET ($1 * 3) - 3`;
+  sql += ` LIMIT 5 OFFSET ($1 * 5) - 5`;
   return db.query(sql, values);
 };
 

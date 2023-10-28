@@ -2,10 +2,11 @@ const express = require("express");
 const ordersRouter = express.Router();
 const {isLogin, isAdmin, isNormalUser} = require("../Middlewares/authorization")
 
-const {getAllOrders, softDeleteOrder,transactions, updateStat, getOrdersOnId} = require("../Handlers/orders.handler")
+const {getAllOrders, softDeleteOrder,transactions, updateStat, getOrdersOnId, getDataOrderStatus} = require("../Handlers/orders.handler")
 const {getAllOrdersProducts,deleteOrderProduct,updateQuantity} = require("../Handlers/orders_products.handler")
 
 ordersRouter.get("/",isLogin, isAdmin, getAllOrders);
+ordersRouter.get("/status", getDataOrderStatus);
 ordersRouter.get("/order",isLogin, getOrdersOnId);
 ordersRouter.post("/",isLogin, transactions);
 ordersRouter.patch("/:id",isLogin, isAdmin, updateStat);

@@ -106,32 +106,50 @@ const insert = (Product_Name,Categories,Description,Price) => {
   return db.query(sql, values);
 };
 
-const insertImage = (id, fileLink) => {
-  const sql = "insert into product_image (product_id, image) values ($1, $2)";
-  const values = [id, fileLink]
+const insertImage = (i, id,  fileLink) => {
+  const sql = "insert into product_image (image_no, product_id, image) values ($1, $2, $3)";
+  const values = [i, id, fileLink]
   return db.query(sql, values)
 }
 
 const update = (params, body) => {
   let sql = `UPDATE products SET `;
   const values = [];
+  const conditions = [];
   let i = 1;
-  for (const [key, value] of Object.entries(body)) {
-    if (value !== '') {
-      sql += `${key} = $${i}, `;
-      values.push(value);
-      i++;
-    }
+
+  if (body.Price) {
+    conditions.push(`price_default = $${i}`);
+    values.push(parseInt(body.Price));
+    i++;
   }
-  // if (fileLink) {
-  //   sql += `photo = $${i}, `;
-  //   values.push(fileLink);
-  //   i++;
-  // }
+  if (body.Categories) {
+    conditions.push(`category = $${i}`);
+    values.push(parseInt(body.Categories));
+    i++;
+  }
+  if (body.Product) {
+    conditions.push(`product_name = $${i}`);
+    values.push(body.Product);
+    i++;
+  }
+  if (body.Description) {
+    conditions.push(`description = $${i}`);
+    values.push(body.Description);
+    i++;
+  }
+
+  if (conditions.length > 0) {
+    sql += `${conditions.join(", ")}, `;
+  }
+
   sql += `update_at = NOW() WHERE id = $${i} RETURNING *`;
   values.push(params.id);
+
   return db.query(sql, values);
 };
+
+
 
 const updateImage = (fileLink, params) => {
   const sql = `update product_image set image = $1, updated_at = now() where id = $2 returning *`
@@ -145,23 +163,55 @@ const del = (id) => {
   return db.query(sql,values)
 };
 
-const popular = () => {
-    const sql = `SELECT
+const popular = (dateStart, dateEnd) => {
+    let sql = `SELECT
     p.product_name as "Product",
-    SUM(op.quantity) AS "Total Quantity"
-  FROM
+    SUM(op.quantity) as "Total_Quantity",
+    SUM(op.subtotal) as "Total_Income"
+FROM
     orders_products AS op
-  JOIN
+JOIN
     products AS p
-  ON
-    op.product_id = p.id
-  GROUP BY
-    p.id
-  HAVING
+ON
+    op.product_id = p.id`;
+  const values = [];
+  const conditions = [];
+    if (dateStart) {
+      conditions.push(`op.created_at > $${values.length + 1}`);
+      values.push(dateStart);
+    }
+    if (dateEnd) {
+      conditions.push(`op.created_at < $${values.length + 1}`);
+      values.push(dateEnd);
+    }
+    if (conditions.length > 0) {
+      sql += ` WHERE ${conditions.join(" AND ")}`;
+    }
+sql += ` GROUP BY
+    p.product_name
+HAVING
     SUM(op.quantity) IS NOT NULL
-  ORDER BY
-    "Total Quantity" DESC`;
-    return db.query(sql);
+ORDER BY
+    "Product" ASC;`;
+    return db.query(sql, values);
 };
 
-module.exports = {get,insert,update,del,popular,totalData,insertImage,updateImage,getDetail};
+const productStatisticByDate = () => {
+  const sql = `SELECT 
+                dates::date AS OrderDate,
+                SUM(op.quantity) AS TotalQuantity
+              FROM 
+                generate_series('2023-09-20'::timestamp, '2023-09-26'::timestamp, interval '1 day') dates
+              LEFT JOIN 
+                orders_products AS op
+              ON 
+                DATE(op.created_at) = dates::date
+              GROUP BY 
+                dates::date
+              ORDER BY 
+                dates::date`;
+  // const values = [body.dateStart, body.dateEnd];
+  return db.query(sql)
+}
+
+module.exports = {get,insert,update,del,popular,totalData,insertImage,updateImage,getDetail, productStatisticByDate};

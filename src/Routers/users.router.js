@@ -9,9 +9,9 @@ usersRouter.post("/register", register);
 usersRouter.post("/login", userlogin);
 usersRouter.get("/verification", userActivation);
 usersRouter.delete("/logout", userLogout);
-usersRouter.get("/", getUsers);
+usersRouter.get("/",isLogin, isAdmin, getUsers);
 usersRouter.get("/profile",isLogin, getUserPorfile);
-usersRouter.post("/",isLogin, isAdmin, singleUpload("user_image"),addUser);
+usersRouter.post("/",isLogin, isAdmin, singleUpload("user_photo_profile"),addUser);
 usersRouter.patch("/",isLogin, singleUpload("user_photo_profile"), updateUser);
 usersRouter.delete("/:id",isLogin, isAdmin, deleteUser);
 

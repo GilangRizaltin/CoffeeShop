@@ -39,7 +39,7 @@ const readOnId = (query, id) => {
     o.total_transactions as "Total_Transactions",
     py.payment_name as "Payment_Type",
     o.status as "Status",
-    o.created_at as "Date"
+    to_char(o.created_at, 'YYYY-MM-DD') as "Date"
     from orders o
     join users u on o.user_id = u.id
     join promos p on o.promo_id = p.id
@@ -188,6 +188,17 @@ const updateStatus = (params, body) => {
   return db.query(sql, values)
 };
 
+const dataStatus = () => {
+  const sql = `SELECT 
+  o.status AS "status",
+  COUNT(*) AS "total"
+FROM 
+  orders o
+GROUP BY 
+  o.status`
+  return db.query(sql)
+}
+
 module.exports = {
     read,
     updateSub, updateTotal,
@@ -198,5 +209,6 @@ module.exports = {
     updateStatus,
     totalData,
     readOnId,
-    totalDataOrdersId
+    totalDataOrdersId,
+    dataStatus
 }

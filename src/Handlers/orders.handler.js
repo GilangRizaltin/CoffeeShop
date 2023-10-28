@@ -1,4 +1,14 @@
-const {read, del,insertOrder, insertProductOrder, updateStatus, totalData, readOnId, totalDataOrdersId} = require("../Models/orders.model")
+const {
+  read, 
+  del,
+  insertOrder, 
+  insertProductOrder, 
+  updateStatus, 
+  totalData, 
+  readOnId, 
+  totalDataOrdersId, 
+  dataStatus
+} = require("../Models/orders.model")
 
 const db = require("../Configs/postgre");
 
@@ -123,6 +133,21 @@ const softDeleteOrder = (req,res) => {
     }
   };
 
+const getDataOrderStatus = async(req, res) => {
+  try {
+    const result = await dataStatus() 
+    res.status(201).json({
+      msg: "Success",
+      result: result.rows,
+    });
+  } catch (error) {
+    console.error(err);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
+}
+
 const updateStat = async (req, res) => {
   try {
     const {body, params} = req;
@@ -138,4 +163,4 @@ const updateStat = async (req, res) => {
   }
 };
 
-module.exports = {getAllOrders, softDeleteOrder, transactions, updateStat, getOrdersOnId};
+module.exports = {getAllOrders, softDeleteOrder, transactions, updateStat, getOrdersOnId, getDataOrderStatus};

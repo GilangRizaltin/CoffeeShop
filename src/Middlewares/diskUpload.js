@@ -38,7 +38,7 @@ module.exports = {
       next();
     });
   },
-  multiUpload: (fieldname, maxCount = 1) => (req, res, next) => {
+  multiUpload: (fieldname, maxCount = 4) => (req, res, next) => {
     diskUpload.array(fieldname, maxCount)(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {

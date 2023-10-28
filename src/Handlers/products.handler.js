@@ -1,4 +1,4 @@
-const { get,insert,update,del,popular,totalData, insertImage, updateImage,getDetail} = require("../Models/products.model");
+const { get,insert,update,del,popular,totalData, insertImage, updateImage,getDetail, productStatisticByDate} = require("../Models/products.model");
 const db = require("../Configs/postgre");
 
 const getProducts = async (req, res) => {
@@ -71,14 +71,17 @@ const addProducts = async (req, res) => {
   // let {filename} = req.files
   // fileLink = `/public/img/${filename}`;
   // valueLink.push(fileLink)
-  if (req.files.filename) {
+
+  if (req.files) {
     for ({filename} of req.files) {
-     fileLink = `/public/img/${filename}`;
+     fileLink = `/img/${filename}`;
      valueLink.push(fileLink)
   }
   for (let i = 0; i < valueLink.length; i++) {
-    await insertImage(id, valueLink[i])
+    await insertImage(i+1, id, valueLink[i])
+    // console.log(i+1, id, valueLink[i])
   }}
+  // console.log(valueLink)
   // const productInsertPromises = fileLink.push((fileLink) => {
   // return insertProductOrder(id, fileLink);
   // });
@@ -162,18 +165,36 @@ const deleteProducts = (req,res) => {
   };
 
 const popularProducts = async (req,res) => {
+  // const {query} = req;
+  const dateStart = '2023-10-01 00:00:00.000';
+  const dateEnd = '2023-10-31 00:00:00.000';
   try{
-    const result = await popular();
+    const result = await popular(dateStart, dateEnd);
     res.status(200).json({
       msg: "Success",
       result: result.rows
     })
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       msg: "Internal Server Error"
     });
   };
   };
 
+const getStatistic = async (req, res) => {
+  try {
+    const result = await productStatisticByDate();
+    res.status(200).json({
+      msg: "Success",
+      result: result.rows
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: "Internal Server Error"
+    });
+  }
+}
 
-module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts, updateProductImage,getDetailProduct};
+module.exports = {getProducts,addProducts,updateProducts,deleteProducts,popularProducts, updateProductImage,getDetailProduct, getStatistic};
