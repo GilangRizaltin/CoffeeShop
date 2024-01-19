@@ -22,7 +22,7 @@ const getProducts = async (req, res) => {
       const meta = {
       page: pages || 1,
       totalProduct: totalProduct,
-      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + nextPage}`,
+      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`,
       prev: pages === 1 || (!query.page) ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
       };
     res.status(200).json({

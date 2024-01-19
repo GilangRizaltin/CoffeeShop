@@ -20,7 +20,7 @@ const userActive = (body) => {
 }
 
 const login = (body) => {
-  const sql = `select id, user_name, user_photo_profile, password_user, user_type from users where email = $1`;
+  const sql = `select id, user_name, full_name, user_photo_profile, password_user, user_type from users where email = $1`;
   const values = [body.email]
   return db.query(sql, values)
 }
@@ -44,7 +44,7 @@ const out = (token) => {
 }
 
 const read = (query) => {
-    let sql = `select u.id as "No.",
+    let sql = `select u.id as "No",
       u.user_photo_profile as "Profile_Photo",
       u.user_name as "Username",
       u.full_name as "Name",
@@ -181,4 +181,24 @@ const insert = (fileLink, body, hashedPwd) => {
   return db.query(sql, values)
 };
 
-module.exports = {registering ,read,update,del,totalData,login,pwd,verification,userActive, out, valid, afterVerification, insert, profile};
+const updatebyAdmin = (id, body, fileLink) => {
+  let sql = `UPDATE users SET `;
+  const values = [id];
+  let i = 1;
+  for (const [key, value] of Object.entries(body)) {
+    if (key !== "password_user") {
+      sql += `${key} = $${i + 1}, `;
+      values.push(value);
+      i++;
+    }
+  }
+  if (fileLink) {
+    sql += `user_photo_profile = $${i + 1}, `;
+    values.push(fileLink);
+    i++;
+  }
+  sql += `update_at = now() WHERE id = $1 returning full_name`;
+  return db.query(sql, values);
+};
+
+module.exports = {registering ,read,update,del,totalData,login,pwd,verification,userActive, out, valid, afterVerification, insert, profile, updatebyAdmin};

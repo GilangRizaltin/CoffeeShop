@@ -15,7 +15,7 @@ const cors = require("cors");
 server.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["PATCH","POST"],
+    methods: ["PATCH","POST", "DELETE"],
   })
 );
 

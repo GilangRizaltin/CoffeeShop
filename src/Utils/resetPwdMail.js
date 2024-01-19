@@ -29,7 +29,7 @@ const resetPwdMail = ({to, subject, data}) => {
         subject,
         html: mustache.render(template, {...data}),
     }
-    return transporter.resetPwdMail(mailOption)
+    return transporter.sendMail(mailOption)
 };
 
 module.exports = {resetPwdMail}

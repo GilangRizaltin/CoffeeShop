@@ -1,9 +1,10 @@
-const {registering, read, update, del, totalData, login, pwd, verification, userActive, out, afterVerification, insert, profile} = require("../Models/users.model")
+const {registering, read, update, del, totalData, login, pwd, verification, userActive, out, afterVerification, insert, profile, updatebyAdmin} = require("../Models/users.model")
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const {jwtKey, issuerWho} = require("../Configs/environtment")
 const { sendMail } = require("../Utils/sendMail");
 const { resetPwdMail } = require("../Utils/resetPwdMail")
+const {getPagination, newResponse} = require("../Utils/response")
 
 const register = async (req, res) => {
   try {
@@ -70,8 +71,9 @@ const userlogin = async (req, res) => {
     const payload = {
       id, user_type, 
     };
-    const userId = result.rows[0].id;
-    const userName = result.rows[0].user_name;
+    // const userId = result.rows[0].id;
+    const userEmail = body.email;
+    const userFullName = result.rows[0].full_name;
     const photo = result.rows[0].user_photo_profile;
     const type = result.rows[0].user_type;
     jwt.sign(payload, jwtKey,{
@@ -80,16 +82,15 @@ const userlogin = async (req, res) => {
     }, (error, token) => {
       if (error) throw error;
 //      console.log(activated)
-      res.status(200).json({
-        msg: "Successfully Login",
-        data: {
-          token,
-          userId,
-          userName,
-          photo,
-          type
-        },
-      });
+    const data= {
+      token: token,
+      email: userEmail,
+      fullname: userFullName,
+      photo_profile: photo,
+      type: type,
+    }
+    const response = newResponse(`Welcome ${result.rows[0].full_name}`, data, null);
+      res.status(200).json(response)
     });
   } catch (error) {
     console.log(error)
@@ -303,30 +304,100 @@ const resetPassword = async (req, res) => {
   try {
     const {query} = req;
     const data = await read(query);
-    if (data.rows.length = 0) 
+    if (data.rows.length < 1) 
     return res.status(404).json({
       msg:"Your Account not Found"
     });
-    const info = await sendMail({
-      to: body.email,
-      subject: "Email Activation",
+    // res.status(404).json({
+    //   msg:"blablabla",
+    //   data: data
+    // });
+    const info = await resetPwdMail({
+      to: query.email,
+      subject: "Reset Password",
       data: {
         username: data.rows[0].Username,
-        activationLink: `http://localhost:9000/users/resetpassword/?email=${query.email}&OTP${data.rows[0].otp}`,
+        activationLink: `http://localhost:5173/auth/password?email=${query.email}&otp=${data.rows[0].otp}`,
       }
     });
-    res.status(201).json({
+    res.status(200).json({
       msg: `Please check E-mail reset password`,
     });
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       msg: "Internal Server Error"
     })
   }
 }
 
-const newPassword = () => {}
+const newPassword = async (req, res) => {
+  try {
+    const {body , query} = req;
+    const data = await read(query)
+    if (data.rows[0].otp !== parseInt(query.otp)) {
+      return res.status(401).json({
+        msg: "Your otp is wrong",
+        data: data.rows[0].otp,
+        otp: parseInt(query.otp)
+      })
+    }
+    const id = data.rows[0].No;
+    const hashedPwd = await argon.hash(body.password_user);
+    const result = await update(id, body, hashedPwd);
+    res.status(200).json({
+      msg: `Password for ${query.email} complete updating `
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: "Internal Server Error"
+    })
+  }
+}
+
+const updateUserByAdmin = async (req, res) => {
+  try {
+    const {body} = req;
+    let fileLink = ``;
+    if (req.file) {
+    fileLink += `/img/${req.file.filename}`;
+    };
+    let hashedPwd = null;
+    const result = await update(body.id, body, hashedPwd, fileLink);
+    // if (result.rowCount === 0) {
+    //   return res.status(404).json({
+    //     msg: `User dengan username ${user_name} tidak ditemukan`,
+    //   });
+    // }
+    res.status(201).json({
+      msg: `Successfully update data for ${result.rows[0].full_name}`,
+      data: body,
+    });
+  } catch (err) {
+    if (err.code === "23505" ) {
+      if (err.constraint === "users_user_name_key") {
+        return res.status(400).json({
+          msg: "Username already exist"
+        });
+      };
+      if (err.constraint === "users_phone_key") {
+        return res.status(400).json({
+          msg: "Phone number already used"
+        });
+      };
+      if (err.constraint === "users_email_key") {
+        return res.status(400).json({
+          msg: "E-mail already used"
+        });
+      };
+    };
+    console.error(err);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
+};
 
 
-
-  module.exports = {getUsers,register,updateUser,deleteUser,userlogin,userActivation,userLogout, addUser, getUserPorfile};
+  module.exports = {getUsers,register,updateUser,deleteUser,userlogin,userActivation,userLogout, addUser, getUserPorfile,resetPassword, updateUserByAdmin, newPassword};

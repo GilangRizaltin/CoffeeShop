@@ -1,4 +1,10 @@
-// const express = require("express");
-// const usersRouter = express.Router();
+const express = require("express");
+const authRouter = express.Router();
+const {register, userlogin, userActivation, userLogout} = require('../Handlers/auth.handler')
 
-// module.exports = authRouter;
+authRouter.post("/register", register);
+authRouter.post("/acivate", userActivation);
+authRouter.post("/login", userlogin);
+authRouter.post("/logout", userLogout);
+
+module.exports = authRouter;

@@ -1,24 +1,33 @@
 const db = require("../Configs/postgre");
 
 const read = (query) => {
-    let sql = `select o.id as "No.",
+    let sql = `select o.id as "No",
     u.full_name  as "User",
     o.subtotal as "Subtotal",
-    p.promo_code as "Promo Code",
-    o.percent_discount as "Discount Percentage",
-    o.flat_discount as "Discount Flat",
-    s.serve_type as "Serving Type",
-    o.fee as "Serving Fee",
+    p.promo_code as "Promo_Code",
+    o.percent_discount as "Discount_Percentage",
+    o.flat_discount as "Discount_Flat",
+    s.serve_type as "Serving_Type",
+    o.fee as "Serving_Fee",
     o.tax as "Tax",
-    o.total_transactions as "Total Transactions",
-    py.payment_name as "Payment Type",
-    o.status as "Status"
+    o.total_transactions as "Total_Transactions",
+    py.payment_name as "Payment_Type",
+    o.status as "Status",
+    o.created_at as "Date"
     from orders o
     join users u on o.user_id = u.id
     join promos p on o.promo_id = p.id
     join serve s on o.serve_id = s.id 
     join payment_type py on o.payment_type = py.id`;
     const values = [parseInt(query.page) || 1];
+    if (query.status) {
+      sql += ` where o.status = $${values.length + 1}`;
+      values.push(query.status)
+    }
+    if (query.order_id) {
+      sql += ` where o.id = $${values.length + 1}`;
+      values.push(parseInt(query.order_id))
+    }
     const sortColumn = query.sortBy || 'o.id';
     const sortOrder = query.sortOrder === 'desc' ? 'DESC' : 'ASC';
     sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
@@ -47,6 +56,10 @@ const readOnId = (query, id) => {
     join payment_type py on o.payment_type = py.id
     where o.user_id = $2`;
     const values = [parseInt(query.page) || 1, id];
+    if (query.status) {
+      sql += `  and o.status = $${values.length + 1}`;
+      values.push(query.status)
+    }
     sql += ` LIMIT 4 OFFSET ($1 * 4) - 4`;
     return db.query(sql, values);
 }
