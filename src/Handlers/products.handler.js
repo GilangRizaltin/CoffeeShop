@@ -7,29 +7,24 @@ const getProducts = async (req, res) => {
     const result = await get(params.id, query);
     const muchData = await totalData(query);
     if (result.rowCount === 0) {
-      return res.status(404).json({
-        msg: "Data not found"
-      });
+      return res.status(404).json(newResponse("Data not found", null, null));
     };
     let pages = 1;
       if (query.page) {
         pages = parseInt(query.page)
       }
     const totalProduct = parseInt(muchData.rows[0].Total_product);
-      const lastPage = Math.ceil(totalProduct / 6) <= pages;
-      const nextPage = pages + 1;
-      const prevPage = pages - 1;
-      const meta = {
-      page: pages || 1,
-      totalProduct: totalProduct,
-      next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`,
-      prev: pages === 1 || (!query.page) ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
-      };
-    res.status(200).json({
-      msg: "Success",
-      result: result.rows,
-      meta,
-    });
+    const metaData = getPagination(req.originalUrl, totalProduct, query.page, 6);
+      // const lastPage = Math.ceil(totalProduct / 6) <= pages;
+      // const nextPage = pages + 1;
+      // const prevPage = pages - 1;
+      // const meta = {
+      // page: pages || 1,
+      // totalProduct: totalProduct,
+      // next: lastPage ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`,
+      // prev: pages === 1 || (!query.page) ? null : `http://localhost:9000${req.originalUrl.slice(0, -1) + prevPage}`
+      // };
+    res.status(200).json(newResponse("Successfully Get Product", result.rows, metaData));
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -43,19 +38,12 @@ const getDetailProduct = async (req,res) => {
     const {params} = req;
     const result = await getDetail(params.id);
     if (result.rowCount === 0) {
-      return res.status(404).json({
-        msg: "Data not found"
-      });
+      return res.status(404).json(newResponse("Data not found", null, null));
     };
-    res.status(200).json({
-      msg: "Success",
-      result: result.rows,
-    });
+    res.status(200).json(newResponse("Successfully Get Product", result.rows, null));
   } catch (err) {
     console.log(err);
-    res.status(500).json({
-      msg: "Internal Server Error",
-    });
+    res.status(500).json(newResponse("Internal Server Error", null, null));
   }
 }
 
@@ -88,16 +76,11 @@ const addProducts = async (req, res) => {
   // await Promise.all(productInsertPromises);
 //  await insertImage(id, fileLink)
   await client.query("commit");
-  res.status(201).json({
-        msg: `Product ${body.Product_Name} berhasil ditambah`,
-        result: data.rows,
-      });
+  res.status(201).json(newResponse("Successfully create product", result.rows[0].product_name, null));
   } catch (error) {
     await client.query("rollback");
     console.log(error);
-      res.status(500).json({
-        msg: "Internal server error"
-      });
+      res.status(500).json(newResponse("Internal Server Error", null, null));
   }};
 
 const updateProducts = async (req, res) => {
@@ -105,19 +88,12 @@ const updateProducts = async (req, res) => {
     const {params, body} = req;
     const result = await update(params, body);
     if (result.rowCount === 0) {
-      return res.status(404).json({
-        msg: `Produk dengan id ${params.id} tidak ditemukan`
-      });
+      return res.status(404).json(newResponse("Product ot found to udate", null, null));
     };
-    res.status(201).json({
-      msg: `Succesfully update product`,
-      update: body
-    });
+    res.status(201).json(newResponse("Successfully update product", body, null));
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      msg: "Internal Server Error",
-    });
+    res.status(500).json(newResponse("Internal Server Error", null, null));
   }
   };
 
@@ -148,19 +124,13 @@ const deleteProducts = (req,res) => {
   del(params.id)
   .then((data) => {
       if (data.rowCount > 0) {
-      res.status(201).json({
-          msg: `Product ${data.rows[0].product_name} dengan id ${params.id} berhasil dihapus.`,
-      });
+      res.status(201).json(newResponse("Successfully delete product", null, null));
   } else {
-      res.status(404).json({
-        msg: `Product dengan id ${params.id} tidak ditemukan.`,
-      });
+      res.status(404).json(newResponse("Product that will deleted not found", null, null));
     }
   })
   .catch((err) => {
-      res.status(500).json({
-          msg: "Internal Server Error",
-      }); console.log(err)
+      res.status(500).json(newResponse("Internal Server Error", null, null)); console.log(err)
   })
   };
 

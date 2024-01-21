@@ -16,23 +16,24 @@ class Response {
     }
   }
   
-  function getPagination(ctx, totalData, page, limit) {
+  function getPagination(url, totalData, page, limit) {
     let nextPage, prevPage;
-    const urlFull = `${ctx.request.host}${ctx.request.url}`;
-    const url = urlFull.split('?')[1];
-    const pages = page !== 0 ? page : 1;
-  
-    nextPage = `${url.slice(0, -1)}${page + 1}`;
-    prevPage = `${url.slice(0, -1)}${page - 1}`;
+
+    // const urlFull = `${ctx.request.host}${ctx.request.url}`;
+    // const url = urlFull.split('?')[1];
+    // const pages = page !== 0 ? page : 1;
+
+    nextPage = `${url.slice(0, -1) + 1}`;
+    prevPage = `${url.slice(0, -1) - 1}`;
     const lastPage = Math.ceil(totalData[0] / limit);
   
-    if (page === 0) {
-      nextPage = `${url}&page=${pages + 1}`;
-      prevPage = null;
-      if (pages === lastPage) {
-        nextPage = null;
-      }
-    }
+    // if (page === 0) {
+    //   nextPage = `${url}&page=${pages + 1}`;
+    //   prevPage = null;
+    //   if (pages === lastPage) {
+    //     nextPage = null;
+    //   }
+    // }
   
     if (page === lastPage) {
       nextPage = null;
@@ -42,7 +43,7 @@ class Response {
       prevPage = null;
     }
   
-    return new Meta(pages, nextPage, prevPage, totalData[0], lastPage);
+    return new Meta(page, nextPage, prevPage, totalData, lastPage);
   }
   
   function newResponse(message, data, meta) {

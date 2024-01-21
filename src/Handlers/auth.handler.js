@@ -12,7 +12,7 @@ const register = async (req, res) => {
       const OTP = Math.floor(100000 + Math.random() * 900000);
       const hashedPassword = await argon.hash(body.password);
       const data = await registering(body, hashedPassword, OTP);
-      const createdUser = data.rows[0];
+      // const createdUser = data.rows[0];
       const info = await sendMail({
         to: body.email,
         subject: "Email Activation",
@@ -22,28 +22,19 @@ const register = async (req, res) => {
           OTP_Number: OTP
         }
       });
-      res.status(201).json({
-        msg: `User successfully creaated. Your ID = ${createdUser.id} with full name : ${createdUser.full_name}`,
-        check: "Please check E-mail and activated"
-      });
+      res.status(201).json(newResponse(`Successfully register user. Checkyour e-mail for activation`, null, null));
   //    req.userInfo = OTP
     } catch (error) {
       console.error(error);
       if (error.code === "23505") {
           if(error.constraint === "users_user_name_key") {
-              return res.status(400).json({
-              msg: "Username already exists"
-        })
+              return res.status(400).json(newResponse(`Username already used`, null, null))
       }
       if (error.constraint === "users_email_key") {
-        return res.status(400).json({
-          msg: "E-mail already registered"
-        });
+        return res.status(400).json(newResponse(`Email already used`, null, null));
       };   
       }
-      res.status(500).json({
-        msg: "Internal server error"
-      });
+      res.status(500).json(newResponse("Internal Server Error", null, null));
     }
   };
   
@@ -52,9 +43,7 @@ const register = async (req, res) => {
       const {body} = req;
       const result = await login(body);
       if (result.rowCount === 0) {
-        return res.status(404).json({
-          msg: "Invalid data"
-        });
+        return res.status(404).json(newResponse("Account not found", null, null));
       };
       let activated = await userActive(body);
       if (activated.rows[0].activated === false) {
@@ -64,9 +53,7 @@ const register = async (req, res) => {
       }
       const {password_user, id, user_type} = result.rows[0];
       if (!await argon.verify(password_user, body.password)) {
-        return res.status(401).json({
-          msg: "Invalid E-mail or Password"
-        });
+        return res.status(401).json(newResponse("Email or password is wrong", null, null));
       };
       const payload = {
         id, user_type, 
@@ -94,9 +81,7 @@ const register = async (req, res) => {
       });
     } catch (error) {
       console.log(error)
-      res.status(500).json({
-        msg: "Internal Server Error"
-      });
+      res.status(500).json(newResponse("Internal Server Error in Private data", null, null));
     };
   }
   
@@ -106,18 +91,12 @@ const register = async (req, res) => {
       const Otp = parseInt(query.OTP)
       const verif = await verification(query)
       if (Otp !== verif.rows[0].otp) {
-        return res.status(404).json({
-        msg: "Incorrect OTP"
-      })};
+        return res.status(403).json(newResponse("Incorrect OTP", null, null))};
       const success = await afterVerification(query)
-      res.status(201).json({
-        msg: "Activation completed"
-      })
+      res.status(201).json(newResponse("Activation completed", null, null))
     } catch (error) {
       console.log(error)
-      res.status(500).json({
-        msg: "Internal Server Error"
-      });
+      res.status(500).json(newResponse("Internal Server Error", null, null));
     };
   };
   
@@ -126,14 +105,10 @@ const register = async (req, res) => {
     const bearer = req.header("Authorization")
     const token = bearer.split(" ")[1];
     const logout = await out(token);
-    res.status(200).json({
-      msg: `Log out success. Thank you`
-    })
+    res.status(200).json(newResponse("Successfully logout. Thank you", null, null))
     } catch (error) {
       console.log(error)
-      res.status(500).json({
-        msg: "Internal Server Error"
-      });
+      res.status(500).json(newResponse("Internal Server Error", null, null));
     };
   }
 
