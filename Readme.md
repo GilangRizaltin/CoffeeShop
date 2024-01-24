@@ -13,16 +13,16 @@ This project took 8 weeks to be carried out individually and based on specified 
 ## Technologies used in this project
 
 - [Express JS](https://pkg.go.dev/github.com/gin-gonic/gin#section-readme) \
-  Express JS is a minimalist and flexible Node.js web application framework. \
+  Express JS is a minimalist and flexible Node.js web application framework.
 
 - [JSON Web Token](https://jwt.io/introduction) \
-  JSON Web Token (JWT) is a compact, URL-safe means of representing claims between two parties. \
+  JSON Web Token (JWT) is a compact, URL-safe means of representing claims between two parties.
 
 - [Cloudinary](https://cloudinary.com/documentation) \
-  Cloudinary is a cloud-based service for managing and optimizing media assets such as images and videos in web development. It simplifies tasks like image uploading, transformation, and delivery, offering a seamless solution for handling multimedia content in applications. \
+  Cloudinary is a cloud-based service for managing and optimizing media assets such as images and videos in web development. It simplifies tasks like image uploading, transformation, and delivery, offering a seamless solution for handling multimedia content in applications.
 
 - [PG](https://github.com/brianc/node-postgres) \
-  Node-Postgres, commonly abbreviated as pg, is a Node.js driver for PostgreSQL databases. \
+  Node-Postgres, commonly abbreviated as pg, is a Node.js driver for PostgreSQL databases.
 
 ## Environment Variables
 
