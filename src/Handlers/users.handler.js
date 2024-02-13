@@ -262,4 +262,4 @@ const updateUserByAdmin = async (req, res) => {
 };
 
 
-  module.exports = {getUsers,register,updateUser,deleteUser,userlogin,userActivation,userLogout, addUser, getUserPorfile,resetPassword, updateUserByAdmin, newPassword};
+  module.exports = {getUsers,updateUser,deleteUser, addUser, getUserPorfile,resetPassword, updateUserByAdmin, newPassword};

@@ -41,5 +41,3 @@ server.get(
       console.log("last mid");
       res.send("This Is My Website holla")}
   );
-//Products
-
