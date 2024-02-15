@@ -55,8 +55,9 @@ const register = async (req, res) => {
       if (!await argon.verify(password_user, body.password)) {
         return res.status(401).json(newResponse("Email or password is wrong", null, null));
       };
+      const role = user_type
       const payload = {
-        id, user_type, 
+        id, role, 
       };
       // const userId = result.rows[0].id;
       const userEmail = body.email;

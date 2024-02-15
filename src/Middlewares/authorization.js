@@ -47,8 +47,8 @@ const isNormalUser = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-    const {id, user_type} = req.userInfo;
-    if(user_type !== 'Admin')
+    const {id, role} = req.userInfo;
+    if(role !== 'Admin')
     return res.status(403).json({
         msg: "Access Denied"
     });
